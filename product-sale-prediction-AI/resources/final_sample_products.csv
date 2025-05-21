@@ -1,0 +1,12 @@
+id,name,category,brand,price,createTimeStamp,description
+p100,Apple iPhone 14 128GB,electronics,Apple,799.0,2023-04-30T00:00:00,iPhone 14 with A15 chip.
+p101,Apple iPhone 15 Pro 256GB,electronics,Apple,1099.0,2024-04-30T00:00:00,iPhone 15 Pro with A17 chip.
+p102,Apple iPhone 16 Pro Max 512GB,electronics,Apple,1299.0,2025-04-30T00:00:00,iPhone 16 Pro Max with improved camera and display.
+p200,Samsung Galaxy S24 Ultra,electronics,Samsung,1099.99,2024-02-10T00:00:00,High-end Android phone with advanced camera.
+p201,Google Pixel 8 Pro,electronics,Google,999.99,2024-01-15T00:00:00,Pixel phone with best-in-class AI features.
+p300,Nike Air Zoom Pegasus 40,clothes,Nike,130.0,2024-03-01T00:00:00,Responsive running shoes for everyday training.
+p301,Uniqlo Ultra Light Down Jacket,clothes,Uniqlo,79.9,2023-11-01T00:00:00,Compact and warm down jacket.
+p302,Adidas 3-Stripes T-Shirt,clothes,Adidas,25.0,2023-06-15T00:00:00,Classic t-shirt with Adidas stripes.
+p400,Kirkland Organic Almond Butter,food,Kirkland,12.99,2023-09-05T00:00:00,Smooth and creamy organic almond butter.
+p401,Blue Diamond Whole Natural Almonds,food,Blue Diamond,10.49,2023-07-12T00:00:00,Healthy roasted almonds for snacking.
+p402,Lindt Swiss Chocolate Assorted,food,Lindt,15.99,2023-12-20T00:00:00,Premium assorted Swiss chocolate truffles.
