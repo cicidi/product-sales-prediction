@@ -26,7 +26,7 @@ public class OrderListTool implements Tool {
         
         // Build tool definition
         this.definition = ToolDefinition.builder()
-                .name("get_sellers_orders")
+                .name("list_orders")
                 .displayName("Order List Query")
                 .description("Query order records for a specific seller, supporting time range and pagination")
                 .operationId("list_orders")

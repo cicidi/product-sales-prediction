@@ -9,6 +9,7 @@ import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -66,16 +67,74 @@ public class MCPOpenApiCustomizer implements OpenApiCustomizer {
         openApi.getPaths().forEach((path, pathItem) -> {
             if (path.startsWith("/api/mcp")) {
                 pathItem.readOperationsMap().forEach((httpMethod, operation) -> {
-                    customizeOperation(operation);
+                    if ("listTools".equals(operation.getOperationId())) {
+                        customizeListToolsResponse(operation);
+                    } else if ("executeTool".equals(operation.getOperationId())) {
+                        customizeExecuteToolRequest(operation);
+                    }
                 });
             }
         });
     }
 
-    private void customizeOperation(Operation operation) {
-        if ("listTools".equals(operation.getOperationId())) {
-            customizeListToolsResponse(operation);
+    private void customizeExecuteToolRequest(Operation operation) {
+        // Ensure request body exists
+        if (operation.getRequestBody() == null) {
+            operation.setRequestBody(new RequestBody());
         }
+        
+        RequestBody requestBody = operation.getRequestBody();
+        if (requestBody.getContent() == null) {
+            requestBody.setContent(new Content());
+        }
+        
+        MediaType mediaType = requestBody.getContent().getOrDefault("application/json", new MediaType());
+        
+        // Add examples for each tool type
+        
+        // Example 1: Sales Analytics Tool
+        Example salesAnalyticsExample = new Example();
+        salesAnalyticsExample.setValue(Map.of(
+            "toolName", "analyze_sales",
+            "parameters", Map.of(
+                "seller_id", "SELLER789",
+                "start_time", "2025/01/01",
+                "end_time", "2025/03/31",
+                "top_n", 5
+            )
+        ));
+        salesAnalyticsExample.setDescription("Execute Sales Analytics Tool");
+        mediaType.addExamples("sales_analytics", salesAnalyticsExample);
+        
+        // Example 2: Product Detail Tool
+        Example productDetailExample = new Example();
+        productDetailExample.setValue(Map.of(
+            "toolName", "get_product_detail",
+            "parameters", Map.of(
+                "product_id", "P123456"
+            )
+        ));
+        productDetailExample.setDescription("Execute Product Detail Tool");
+        mediaType.addExamples("product_detail", productDetailExample);
+        
+        // Example 3: Order List Tool
+        Example orderListExample = new Example();
+        orderListExample.setValue(Map.of(
+            "toolName", "get_sellers_orders",
+            "parameters", Map.of(
+                "seller_id", "SELLER789",
+                "start_time", "2025/02/01",
+                "end_time", "2025/05/01",
+                "page", 0,
+                "size", 20
+            )
+        ));
+        orderListExample.setDescription("Execute Order List Tool");
+        mediaType.addExamples("order_list", orderListExample);
+
+        // Update request body
+        requestBody.getContent().addMediaType("application/json", mediaType);
+        operation.setRequestBody(requestBody);
     }
 
     private void customizeListToolsResponse(Operation operation) {
