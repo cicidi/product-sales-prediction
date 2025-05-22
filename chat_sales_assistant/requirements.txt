@@ -1,0 +1,7 @@
+streamlit
+langchain
+openai
+httpx
+pydantic
+PyYAML
+jsonschema
