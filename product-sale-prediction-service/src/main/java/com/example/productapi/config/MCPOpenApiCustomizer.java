@@ -23,32 +23,13 @@ public class MCPOpenApiCustomizer implements OpenApiCustomizer {
 
     private final ToolRegistry toolRegistry;
     
-    // Define the desired tool order and default data
-    private static final List<Map<String, String>> DEFAULT_TOOLS = Arrays.asList(
-        createDefaultTool("Sales Analytics", "analyze_sales", "analyze_sales", 
-            "Analyze historical sales data to provide insights and trends"),
-        createDefaultTool("Product Search", "search_products", "search_products",
-            "Search products by keywords and optional filters"),
-        createDefaultTool("Sales Prediction", "predict_product_sales", "predict_product_sales",
-            "Predict future sales for a specific product"),
-        createDefaultTool("Product Detail", "get_product_detail", "get_product_detail",
-            "Get detailed information about a specific product"),
-        createDefaultTool("Order List Query", "get_sellers_orders", "list_orders",
-            "Query order records for a specific seller, supporting time range and pagination"),
-        createDefaultTool("Product List", "list_products", "list_products",
-            "List products with optional filtering by category and seller ID"),
-        createDefaultTool("Similar Product Search", "search_similar_products", "search_similar_products",
-            "Find similar products based on product ID or description"),
-        createDefaultTool("Product Management", "manage_product", "manage_product",
-            "Create, update, or delete product information")
-    );
-
+    // 定义工具的顺序
     private static final List<String> TOOL_ORDER = Arrays.asList(
         "analyze_sales",
         "search_products",
         "predict_product_sales",
         "get_product_detail",
-        "get_sellers_orders",
+        "list_orders",
         "list_products",
         "search_similar_products",
         "manage_product"
@@ -90,47 +71,40 @@ public class MCPOpenApiCustomizer implements OpenApiCustomizer {
         
         MediaType mediaType = requestBody.getContent().getOrDefault("application/json", new MediaType());
         
-        // Add examples for each tool type
+        // 获取实际的工具定义
+        List<Tool> tools = toolRegistry.getAllTools().stream()
+            .filter(t -> t instanceof Tool)
+            .map(t -> (Tool) t)
+            .collect(Collectors.toList());
         
-        // Example 1: Sales Analytics Tool
-        Example salesAnalyticsExample = new Example();
-        salesAnalyticsExample.setValue(Map.of(
-            "toolName", "analyze_sales",
-            "parameters", Map.of(
-                "seller_id", "SELLER789",
-                "start_time", "2025/01/01",
-                "end_time", "2025/03/31",
-                "top_n", 5
-            )
-        ));
-        salesAnalyticsExample.setDescription("Execute Sales Analytics Tool");
-        mediaType.addExamples("sales_analytics", salesAnalyticsExample);
-        
-        // Example 2: Product Detail Tool
-        Example productDetailExample = new Example();
-        productDetailExample.setValue(Map.of(
-            "toolName", "get_product_detail",
-            "parameters", Map.of(
-                "product_id", "P123456"
-            )
-        ));
-        productDetailExample.setDescription("Execute Product Detail Tool");
-        mediaType.addExamples("product_detail", productDetailExample);
-        
-        // Example 3: Order List Tool
-        Example orderListExample = new Example();
-        orderListExample.setValue(Map.of(
-            "toolName", "get_sellers_orders",
-            "parameters", Map.of(
-                "seller_id", "SELLER789",
-                "start_time", "2025/02/01",
-                "end_time", "2025/05/01",
-                "page", 0,
-                "size", 20
-            )
-        ));
-        orderListExample.setDescription("Execute Order List Tool");
-        mediaType.addExamples("order_list", orderListExample);
+        // 为每种工具类型添加示例
+        for (Tool tool : tools) {
+            ToolDefinition def = tool.getDefinition();
+            String toolName = def.getName();
+            
+            // 创建示例参数
+            Map<String, Object> sampleParams = new HashMap<>();
+            
+            // 为每个参数添加示例值
+            if (def.getParameters() != null) {
+                for (ToolDefinition.ParameterDefinition param : def.getParameters()) {
+                    if (param.getExample() != null) {
+                        sampleParams.put(param.getName(), param.getExample());
+                    } else if (param.getDefaultValue() != null) {
+                        sampleParams.put(param.getName(), param.getDefaultValue());
+                    }
+                }
+            }
+            
+            // 创建工具执行示例
+            Example toolExample = new Example();
+            toolExample.setValue(Map.of(
+                "toolName", toolName,
+                "parameters", sampleParams
+            ));
+            toolExample.setDescription("Execute " + def.getDisplayName());
+            mediaType.addExamples(toolName, toolExample);
+        }
 
         // Update request body
         requestBody.getContent().addMediaType("application/json", mediaType);
@@ -138,50 +112,86 @@ public class MCPOpenApiCustomizer implements OpenApiCustomizer {
     }
 
     private void customizeListToolsResponse(Operation operation) {
-        // Create example response using default tools
+        // 获取所有工具的信息
+        List<Map<String, Object>> toolList = new ArrayList<>();
+        
+        // 创建工具映射以便按顺序查找
+        Map<String, Tool> toolMap = toolRegistry.getAllTools().stream()
+            .filter(t -> t instanceof Tool)
+            .map(t -> (Tool) t)
+            .collect(Collectors.toMap(
+                t -> t.getName(),
+                t -> t,
+                (existing, replacement) -> existing
+            ));
+        
+        // 按照定义的顺序添加工具信息
+        for (String toolName : TOOL_ORDER) {
+            if (toolMap.containsKey(toolName)) {
+                Tool tool = toolMap.get(toolName);
+                ToolDefinition def = tool.getDefinition();
+                
+                Map<String, Object> toolInfo = new HashMap<>();
+                toolInfo.put("displayName", def.getDisplayName());
+                toolInfo.put("name", def.getName());
+                toolInfo.put("operationId", def.getOperationId());
+                toolInfo.put("description", def.getDescription());
+                
+                toolList.add(toolInfo);
+            }
+        }
+        
+        // 添加不在顺序列表中的其他工具
+        for (Tool tool : toolMap.values()) {
+            String toolName = tool.getName();
+            if (!TOOL_ORDER.contains(toolName)) {
+                ToolDefinition def = tool.getDefinition();
+                
+                Map<String, Object> toolInfo = new HashMap<>();
+                toolInfo.put("displayName", def.getDisplayName());
+                toolInfo.put("name", def.getName());
+                toolInfo.put("operationId", def.getOperationId());
+                toolInfo.put("description", def.getDescription());
+                
+                toolList.add(toolInfo);
+            }
+        }
+
+        // 创建响应示例
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
-        response.put("data", DEFAULT_TOOLS);
+        response.put("data", toolList);
         response.put("error", null);
         response.put("toolName", "list_tools");
 
-        // Create and configure the example
+        // 创建并配置示例
         Example example = new Example();
         example.setValue(response);
         example.setDescription("List of available MCP tools");
-        example.setSummary("Default MCP tools list");
+        example.setSummary("MCP tools list");
 
-        // Ensure operation has responses
+        // 确保操作有响应
         if (operation.getResponses() == null) {
             operation.setResponses(new ApiResponses());
         }
 
-        // Configure 200 response
+        // 配置200响应
         ApiResponse apiResponse = operation.getResponses().getOrDefault("200", new ApiResponse());
         if (apiResponse.getContent() == null) {
             apiResponse.setContent(new Content());
         }
 
-        // Configure media type
+        // 配置媒体类型
         MediaType mediaType = apiResponse.getContent().getOrDefault("application/json", new MediaType());
         mediaType.addExamples("default", example);
 
-        // Add schema if needed
+        // 如果需要，添加schema
         if (mediaType.getSchema() == null) {
             mediaType.setSchema(new Schema<>().type("object"));
         }
 
-        // Update the response configuration
+        // 更新响应配置
         apiResponse.getContent().addMediaType("application/json", mediaType);
         operation.getResponses().addApiResponse("200", apiResponse);
-    }
-
-    private static Map<String, String> createDefaultTool(String displayName, String name, String operationId, String description) {
-        Map<String, String> tool = new HashMap<>();
-        tool.put("displayName", displayName);
-        tool.put("name", name);
-        tool.put("operationId", operationId);
-        tool.put("description", description);
-        return tool;
     }
 } 
