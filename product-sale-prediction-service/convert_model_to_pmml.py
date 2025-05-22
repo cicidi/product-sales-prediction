@@ -9,23 +9,23 @@ import xgboost as xgb
 import os
 
 def convert_model_to_pmml():
-    # 模型文件路径
+    # Model file paths
     model_dir = "../product-sale-prediction-AI/train/model"
     model_path = os.path.join(model_dir, "xgb_sales_forecast_model.joblib")
     pmml_path = os.path.join(model_dir, "xgb_sales_forecast_model.pmml")
     
     try:
-        # 加载模型
+        # Load model
         print("Loading XGBoost model...")
         xgb_model = joblib.load(model_path)
         
-        # 打印模型信息
+        # Print model information
         print("\nModel Information:")
         print(f"Model type: {type(xgb_model)}")
         print(f"Model parameters: {xgb_model.get_params()}")
         print(f"Number of features used by model: {xgb_model.n_features_in_}")
         
-        # 使用模型的原始特征名称
+        # Use original feature names of the model
         feature_names = [
             "unit_price", "dayofweek", "day", "week", "month", "quarter", "year",
             "is_weekend", "is_month_start", "is_month_end", "product_id_enc",
@@ -39,12 +39,12 @@ def convert_model_to_pmml():
         
         print(f"\nUsing {len(feature_names)} features: {feature_names}")
         
-        # 创建示例数据
+        # Create example data
         print("\nCreating example data...")
         X = pd.DataFrame(np.random.rand(100, len(feature_names)), columns=feature_names)
-        y = np.random.rand(100)  # 示例目标变量
+        y = np.random.rand(100)  # Example target variable
         
-        # 创建预处理器
+        # Create preprocessor
         print("Creating preprocessor...")
         preprocessor = ColumnTransformer(
             transformers=[
@@ -53,7 +53,7 @@ def convert_model_to_pmml():
             remainder='passthrough'
         )
         
-        # 创建新的XGBoost模型，使用原始模型的参数
+        # Create new XGBoost model using original model parameters
         print("Creating new XGBoost model...")
         new_xgb = xgb.XGBRegressor(
             n_estimators=xgb_model.n_estimators,
@@ -66,22 +66,22 @@ def convert_model_to_pmml():
             random_state=42
         )
         
-        # 创建并训练pipeline
+        # Create and train pipeline
         print("Creating and training pipeline...")
         pipeline = PMMLPipeline([
             ("preprocessor", preprocessor),
             ("regressor", new_xgb)
         ])
         
-        # 训练pipeline
+        # Train pipeline
         print("Fitting pipeline...")
         pipeline.fit(X, y)
         
-        # 复制原始模型的参数到新模型
+        # Copy original model parameters to new model
         print("Copying model parameters...")
         new_xgb._Booster = xgb_model._Booster
         
-        # 转换为PMML
+        # Convert to PMML
         print("Converting to PMML...")
         sklearn2pmml(pipeline, pmml_path, with_repr=True)
         

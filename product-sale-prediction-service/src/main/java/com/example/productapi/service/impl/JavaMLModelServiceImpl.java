@@ -245,20 +245,20 @@ public class JavaMLModelServiceImpl implements MLModelService {
             
             // 为每周进行预测
             for (int week = 0; week < weeksAhead; week++) {
-                // 计算预测日期
+                // Calculate prediction date
                 LocalDate predictionDate = currentDate.plusWeeks(week);
                 
-                // 准备模型输入
+                // Prepare model input
                 Map<String, Object> features = prepareFeatures(
                         productId, sellerId, unitPrice, historicalSales, predictionDate);
                 
-                // 执行预测
+                // Execute prediction
                 Map<String, Object> weekPrediction = executeModelPrediction(features);
                 
-                // 确保预测值非负
+                // Ensure prediction value is non-negative
                 double salesPrediction = Math.max(0, (double) weekPrediction.get("predicted_sales"));
                 
-                // 添加到预测结果
+                // Add to prediction results
                 Map<String, Object> weekPredictionMap = new HashMap<>();
                 weekPredictionMap.put("week_number", week + 1);
                 weekPredictionMap.put("prediction_date", predictionDate.format(DateTimeFormatter.ISO_LOCAL_DATE));
@@ -266,14 +266,14 @@ public class JavaMLModelServiceImpl implements MLModelService {
                 
                 predictions.add(weekPredictionMap);
                 
-                // 将本周预测添加到历史数据中，用于下一周的预测
+                // Add this week's prediction to historical data for next week's prediction
                 historicalSales.add(salesPrediction);
                 if (historicalSales.size() > 30) {
                     historicalSales.remove(0);
                 }
             }
             
-            // 获取历史数据的起止时间
+            // Get start and end dates of historical data
             LocalDate startDate = LocalDate.now().minusDays(historicalSales.size());
             LocalDate endDate = LocalDate.now();
             

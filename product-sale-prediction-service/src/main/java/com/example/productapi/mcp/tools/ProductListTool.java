@@ -20,30 +20,30 @@ public class ProductListTool implements Tool {
     public ProductListTool(ProductService productService) {
         this.productService = productService;
         
-        // 构建工具定义 - 使用 snake_case
+        // Build tool definition - using snake_case
         this.definition = ToolDefinition.builder()
                 .name("get_products")
-                .displayName("产品列表查询")
-                .description("获取产品列表，支持按类别和卖家ID筛选")
+                .displayName("Product List Query")
+                .description("Get product list, supporting filtering by category and seller ID")
                 .parameters(Arrays.asList(
                     ToolDefinition.ParameterDefinition.builder()
                         .name("category")
                         .type("string")
-                        .description("商品类别，可选参数，用于按类别筛选产品")
+                        .description("Product category, optional parameter, used to filter products by category")
                         .required(false)
                         .example("electronics")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("seller_id")
                         .type("string")
-                        .description("卖家ID，可选参数，用于按卖家筛选产品")
+                        .description("Seller ID, optional parameter, used to filter products by seller")
                         .required(false)
                         .example("SELLER789")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("page")
                         .type("integer")
-                        .description("页码，从0开始，可选参数，默认为0")
+                        .description("Page number, starting from 0, optional parameter, defaults to 0")
                         .required(false)
                         .defaultValue(0)
                         .example(0)
@@ -51,19 +51,19 @@ public class ProductListTool implements Tool {
                     ToolDefinition.ParameterDefinition.builder()
                         .name("size")
                         .type("integer")
-                        .description("每页记录数，可选参数，默认为20，最大为100")
+                        .description("Records per page, optional parameter, defaults to 20, maximum 100")
                         .required(false)
                         .defaultValue(20)
                         .example(20)
                         .build()
                 ))
                 .outputSchema(Map.of(
-                    "products", "产品列表",
-                    "total_count", "产品总数",
-                    "current_page", "当前页码",
-                    "total_pages", "总页数",
-                    "category", "查询的类别（如果提供）",
-                    "seller_id", "查询的卖家ID（如果提供）"
+                    "products", "Product list",
+                    "total_count", "Total number of products",
+                    "current_page", "Current page number",
+                    "total_pages", "Total number of pages",
+                    "category", "Queried category (if provided)",
+                    "seller_id", "Queried seller ID (if provided)"
                 ))
                 .build();
     }
@@ -75,11 +75,11 @@ public class ProductListTool implements Tool {
     
     @Override
     public ToolResponse execute(Map<String, Object> parameters) {
-        // 提取参数
+        // Extract parameters
         String category = parameters.containsKey("category") ? parameters.get("category").toString() : null;
         String sellerId = parameters.containsKey("seller_id") ? parameters.get("seller_id").toString() : null;
         
-        // 处理分页参数
+        // Handle pagination parameters
         int page = 0;
         if (parameters.containsKey("page")) {
             if (parameters.get("page") instanceof Integer) {
@@ -88,7 +88,7 @@ public class ProductListTool implements Tool {
                 try {
                     page = Integer.parseInt(parameters.get("page").toString());
                 } catch (NumberFormatException e) {
-                    return ToolResponse.error(getName(), "page必须是有效的整数");
+                    return ToolResponse.error(getName(), "page must be a valid integer");
                 }
             }
         }
@@ -101,21 +101,21 @@ public class ProductListTool implements Tool {
                 try {
                     size = Integer.parseInt(parameters.get("size").toString());
                 } catch (NumberFormatException e) {
-                    return ToolResponse.error(getName(), "size必须是有效的整数");
+                    return ToolResponse.error(getName(), "size must be a valid integer");
                 }
             }
             
-            // 限制每页最大记录数
+            // Limit maximum records per page
             if (size > 100) {
                 size = 100;
             }
         }
         
         try {
-            // 调用服务方法获取产品列表
+            // Call service method to get product list
             List<Product> products = productService.getAllProducts(category, sellerId);
             
-            // 构建响应
+            // Build response
             Map<String, Object> response = new HashMap<>();
             response.put("products", products);
             response.put("total_count", products.size());
@@ -126,7 +126,7 @@ public class ProductListTool implements Tool {
             
             return ToolResponse.success(getName(), response);
         } catch (Exception e) {
-            return ToolResponse.error(getName(), "获取产品列表时发生错误: " + e.getMessage());
+            return ToolResponse.error(getName(), "Error occurred while getting product list: " + e.getMessage());
         }
     }
 } 

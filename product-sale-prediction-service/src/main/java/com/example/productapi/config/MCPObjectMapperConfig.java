@@ -13,7 +13,7 @@ public class MCPObjectMapperConfig {
     @Primary
     public ObjectMapper mcpObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
-        // 配置输出为 camelCase
+        // Configure output as camelCase
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
         return objectMapper;
     }
@@ -21,7 +21,7 @@ public class MCPObjectMapperConfig {
     @Bean(name = "snakeCaseObjectMapper")
     public ObjectMapper snakeCaseObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
-        // 配置输出为 snake_case
+        // Configure output as snake_case
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         return objectMapper;
     }

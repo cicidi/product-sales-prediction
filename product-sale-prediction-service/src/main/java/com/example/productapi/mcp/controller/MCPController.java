@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mcp")
-@Tag(name = "Model-Centric Protocol", description = "模型中心协议API - 为大语言模型(LLM)提供工具调用接口，支持销售分析和预测功能")
+@Tag(name = "Model-Centric Protocol", description = "Model-Centric Protocol API - Provides tool invocation interface for Large Language Models (LLMs), supporting sales analysis and prediction functions")
 public class MCPController {
 
     private final ToolRegistry toolRegistry;
@@ -25,8 +25,8 @@ public class MCPController {
     }
 
     @Operation(
-        summary = "获取所有可用工具",
-        description = "返回所有通过MCP可调用的工具信息，包括销售分析工具、销售预测工具等"
+        summary = "Get all available tools",
+        description = "Returns information about all tools callable through MCP, including sales analysis tools, sales prediction tools, etc."
     )
     @GetMapping("/tools")
     public ResponseEntity<ToolResponse> listTools() {
@@ -36,8 +36,8 @@ public class MCPController {
     }
 
     @Operation(
-        summary = "获取工具详细信息",
-        description = "根据工具名称返回特定工具的详细信息，包括其参数和输出模式，如商品销售预测需要的参数和返回值结构"
+        summary = "Get tool details",
+        description = "Returns detailed information about a specific tool by its name, including its parameters and output schema, such as parameters needed for product sales prediction and return value structure"
     )
     @GetMapping("/tools/{toolName}")
     public ResponseEntity<ToolResponse> getToolDetails(@PathVariable String toolName) {
@@ -47,8 +47,8 @@ public class MCPController {
     }
 
     @Operation(
-        summary = "执行工具",
-        description = "使用提供的参数调用特定工具。例如：调用销售预测工具预测特定商品未来销量；调用销售分析工具获取销售排行"
+        summary = "Execute tool",
+        description = "Invoke a specific tool with provided parameters. For example: call the sales prediction tool to predict future sales of specific products; call the sales analysis tool to get sales rankings"
     )
     @PostMapping("/execute")
     public ResponseEntity<ToolResponse> executeTool(@RequestBody ToolRequest request) {
@@ -66,8 +66,8 @@ public class MCPController {
     }
     
     @Operation(
-        summary = "健康检查",
-        description = "验证MCP服务是否可用，并返回当前服务版本和可用工具数量"
+        summary = "Health check",
+        description = "Verify if MCP service is available and return current service version and number of available tools"
     )
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getStatus() {

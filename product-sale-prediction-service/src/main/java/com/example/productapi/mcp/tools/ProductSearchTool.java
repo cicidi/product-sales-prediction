@@ -26,27 +26,27 @@ public class ProductSearchTool implements Tool {
     this.definition = ToolDefinition.builder()
         .name("search_products")
         .displayName("Search Products")
-        .description("通过其他产品的Product Id 或者产品描述搜索类似的产品信息")
+        .description("Search for similar products using either a Product ID or product description")
         .parameters(Arrays.asList(
             ToolDefinition.ParameterDefinition.builder()
                 .name("product_id")
                 .type("string")
                 .description(
-                    "其他产品的Product Id ，如果有就找类似的产品就先去数据库找产品信息，然后通过相关性找其他产品")
+                    "Product ID of another product, if provided, will first find the product information in the database, then find other similar products based on relevance")
                 .required(false)
                 .example("P123456")
                 .build(),
             ToolDefinition.ParameterDefinition.builder()
                 .name("description")
                 .type("string")
-                .description("产品的特征描述，用来搜索类似的产品")
+                .description("Product feature description, used to search for similar products")
                 .required(false)
                 .example("iphone 16 pro max")
                 .build(),
             ToolDefinition.ParameterDefinition.builder()
                 .name("page")
                 .type("integer")
-                .description("页码，从0开始，可选参数，默认为0")
+                .description("Page number, starting from 0, optional parameter, defaults to 0")
                 .required(false)
                 .defaultValue(0)
                 .example(0)
@@ -54,19 +54,19 @@ public class ProductSearchTool implements Tool {
             ToolDefinition.ParameterDefinition.builder()
                 .name("size")
                 .type("integer")
-                .description("每页记录数，可选参数，默认为20，最大为100")
+                .description("Records per page, optional parameter, defaults to 20, maximum 100")
                 .required(false)
                 .defaultValue(20)
                 .example(20)
                 .build()
         ))
         .outputSchema(Map.of(
-            "products", "搜索到的产品列表",
-            "total_count", "产品总数",
-            "current_page", "当前页码",
-            "total_pages", "总页数",
-            "query_type", "查询类型（product_id或description）",
-            "query_value", "查询值"
+            "products", "List of found products",
+            "total_count", "Total number of products",
+            "current_page", "Current page number",
+            "total_pages", "Total number of pages",
+            "query_type", "Query type (product_id or description)",
+            "query_value", "Query value"
         ))
         .build();
   }
@@ -93,7 +93,7 @@ public class ProductSearchTool implements Tool {
             try {
                 page = Integer.parseInt(parameters.get("page").toString());
             } catch (NumberFormatException e) {
-                return ToolResponse.error(getName(), "page必须是有效的整数");
+                return ToolResponse.error(getName(), "page must be a valid integer");
             }
         }
     }
@@ -106,11 +106,11 @@ public class ProductSearchTool implements Tool {
             try {
                 size = Integer.parseInt(parameters.get("size").toString());
             } catch (NumberFormatException e) {
-                return ToolResponse.error(getName(), "size必须是有效的整数");
+                return ToolResponse.error(getName(), "size must be a valid integer");
             }
         }
         
-        // 限制每页最大记录数
+        // Limit maximum records per page
         if (size > 100) {
             size = 100;
         }

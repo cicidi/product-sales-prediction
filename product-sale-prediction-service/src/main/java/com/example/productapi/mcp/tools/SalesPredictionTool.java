@@ -29,46 +29,46 @@ public class SalesPredictionTool implements Tool {
         // Build the tool definition based on the Swagger API
         this.definition = ToolDefinition.builder()
                 .name("predict_sales")
-                .displayName("销量预测")
-                .description("基于历史数据预测特定商品在未来时间段的销量和销售额，帮助卖家做出更好的库存和营销决策")
+                .displayName("Sales Prediction")
+                .description("Predict sales volume and revenue for specific products in future time periods based on historical data, helping sellers make better inventory and marketing decisions")
                 .parameters(Arrays.asList(
                     ToolDefinition.ParameterDefinition.builder()
                         .name("product_id")
                         .type("string")
-                        .description("商品ID，必填参数，指定需要预测销量的商品")
+                        .description("Product ID, required parameter, specifies the product for sales prediction")
                         .required(true)
                         .example("P123456")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("seller_id")
                         .type("string")
-                        .description("卖家ID，必填参数，指定商品所属卖家")
+                        .description("Seller ID, required parameter, specifies the product owner")
                         .required(true)
                         .example("SELLER789")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("start_time")
                         .type("string")
-                        .description("预测开始时间，格式为yyyy/MM（如：2025/06），可选参数，默认为当前时间")
+                        .description("Prediction start time, format yyyy/MM (e.g., 2025/06), optional parameter, defaults to current time")
                         .required(false)
                         .example("2025/06")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("end_time")
                         .type("string")
-                        .description("预测结束时间，格式为yyyy/MM（如：2025/08），可选参数，默认为开始时间后3个月")
+                        .description("Prediction end time, format yyyy/MM (e.g., 2025/08), optional parameter, defaults to 3 months after start time")
                         .required(false)
                         .example("2025/08")
                         .build()
                 ))
                 .outputSchema(Map.of(
-                    "product_id", "商品ID",
-                    "seller_id", "卖家ID",
-                    "predictions", "预测结果列表",
-                    "start_time", "预测开始时间",
-                    "end_time", "预测结束时间",
-                    "total_predicted_sales", "总预测销量",
-                    "total_predicted_revenue", "总预测销售额"
+                    "product_id", "Product ID",
+                    "seller_id", "Seller ID",
+                    "predictions", "List of predictions",
+                    "start_time", "Prediction start time",
+                    "end_time", "Prediction end time",
+                    "total_predicted_sales", "Total predicted sales volume",
+                    "total_predicted_revenue", "Total predicted revenue"
                 ))
                 .build();
     }

@@ -14,45 +14,45 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, String> {
     
     /**
-     * 按时间戳降序查找所有订单，包含分页
+     * Find all orders sorted by timestamp in descending order, with pagination
      */
     Page<Order> findAllByOrderByTimestampDesc(Pageable pageable);
     
     /**
-     * 按卖家ID查找订单，包含分页
+     * Find orders by seller ID, with pagination
      */
     Page<Order> findBySellerIdOrderByTimestampDesc(String sellerId, Pageable pageable);
     
     /**
-     * 按卖家ID和时间范围查找订单，包含分页
+     * Find orders by seller ID and time range, with pagination
      */
     Page<Order> findBySellerIdAndTimestampBetweenOrderByTimestampDesc(
             String sellerId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
     
     /**
-     * 检查是否存在特定卖家的订单
+     * Check if orders exist for a specific seller
      */
     boolean existsBySellerId(String sellerId);
     
     /**
-     * 按卖家ID和时间范围查找订单
+     * Find orders by seller ID and time range
      */
     List<Order> findBySellerIdAndTimestampBetween(String sellerId, LocalDateTime startTime, LocalDateTime endTime);
     
     /**
-     * 按卖家ID、商品ID和时间范围查找订单
+     * Find orders by seller ID, product ID and time range
      */
     List<Order> findBySellerIdAndProductIdAndTimestampBetween(
             String sellerId, String productId, LocalDateTime startTime, LocalDateTime endTime);
     
     /**
-     * 按卖家ID、商品ID列表和时间范围查找订单
+     * Find orders by seller ID, product ID list and time range
      */
     List<Order> findBySellerIdAndProductIdInAndTimestampBetween(
             String sellerId, List<String> productIds, LocalDateTime startTime, LocalDateTime endTime);
     
     /**
-     * 按卖家ID、商品ID和时间范围查找订单（从指定时间之后）
+     * Find orders by seller ID, product ID and time range (after specified time)
      */
     List<Order> findBySellerIdAndProductIdAndTimestampAfter(
             String sellerId, String productId, LocalDateTime startTime);
@@ -118,7 +118,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             Pageable pageable);
 
     /**
-     * 按卖家ID和产品ID查找所有订单（不受时间限制）
+     * Find all orders by seller ID and product ID (without time limit)
      */
     List<Order> findBySellerIdAndProductId(String sellerId, String productId);
 } 

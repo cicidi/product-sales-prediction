@@ -19,64 +19,64 @@ public class ProductManagementTool implements Tool {
     public ProductManagementTool(ProductService productService) {
         this.productService = productService;
         
-        // 构建工具定义
+        // Build tool definition
         this.definition = ToolDefinition.builder()
                 .name("manage_product")
-                .displayName("产品管理")
-                .description("创建新产品或更新现有产品信息")
+                .displayName("Product Management")
+                .description("Create new product or update existing product information")
                 .parameters(Arrays.asList(
                     ToolDefinition.ParameterDefinition.builder()
                         .name("product_id")
                         .type("string")
-                        .description("产品ID，更新时必填")
+                        .description("Product ID, required for updates")
                         .required(false)
                         .example("P123456")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("seller_id")
                         .type("string")
-                        .description("卖家ID，创建时必填")
+                        .description("Seller ID, required for creation")
                         .required(false)
                         .example("SELLER789")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("name")
                         .type("string")
-                        .description("产品名称，创建时必填")
+                        .description("Product name, required for creation")
                         .required(false)
-                        .example("无线蓝牙耳机")
+                        .example("Wireless Bluetooth Earphones")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("category")
                         .type("string")
-                        .description("产品类别，创建时必填")
+                        .description("Product category, required for creation")
                         .required(false)
-                        .example("电子产品")
+                        .example("Electronics")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("brand")
                         .type("string")
-                        .description("品牌，创建时必填")
+                        .description("Brand, required for creation")
                         .required(false)
                         .example("Sony")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("price")
                         .type("number")
-                        .description("价格，创建时必填")
+                        .description("Price, required for creation")
                         .required(false)
                         .example(999.99)
                         .build()
                 ))
                 .outputSchema(Map.of(
-                    "product_id", "产品ID",
-                    "seller_id", "卖家ID",
-                    "name", "产品名称",
-                    "category", "产品类别",
-                    "brand", "品牌",
-                    "price", "价格",
-                    "created_at", "创建时间",
-                    "updated_at", "更新时间"
+                    "product_id", "Product ID",
+                    "seller_id", "Seller ID",
+                    "name", "Product name",
+                    "category", "Product category",
+                    "brand", "Brand",
+                    "price", "Price",
+                    "created_at", "Creation time",
+                    "updated_at", "Update time"
                 ))
                 .build();
     }
@@ -88,25 +88,25 @@ public class ProductManagementTool implements Tool {
     
     @Override
     public ToolResponse execute(Map<String, Object> parameters) {
-        // 判断是创建还是更新操作
+        // Determine if this is a create or update operation
         boolean isCreate = !parameters.containsKey("product_id");
         
-        // 创建操作的必填字段验证
+        // Validate required fields for creation
         if (isCreate) {
             List<String> requiredFields = Arrays.asList("name", "category", "brand", "price", "seller_id");
             for (String field : requiredFields) {
                 if (!parameters.containsKey(field)) {
-                    return ToolResponse.error(getName(), "创建产品时，" + field + "是必填参数");
+                    return ToolResponse.error(getName(), "When creating a product, " + field + " is a required parameter");
                 }
             }
         } else {
-            // 更新操作，至少需要一个更新字段
-            if (parameters.size() <= 1) { // 只有id
-                return ToolResponse.error(getName(), "更新产品时，需要至少提供一个要更新的字段");
+            // For updates, at least one update field is required
+            if (parameters.size() <= 1) { // only id
+                return ToolResponse.error(getName(), "When updating a product, at least one field must be provided for update");
             }
         }
         
-        // 处理价格字段，确保为数字
+        // Handle price field, ensure it's a number
         if (parameters.containsKey("price")) {
             Object priceObj = parameters.get("price");
             double price;
@@ -116,19 +116,19 @@ public class ProductManagementTool implements Tool {
             } else {
                 try {
                     price = Double.parseDouble(priceObj.toString());
-                    parameters.put("price", price); // 更新为解析后的数值
+                    parameters.put("price", price); // Update with parsed value
                 } catch (NumberFormatException e) {
-                    return ToolResponse.error(getName(), "price必须是有效的数字");
+                    return ToolResponse.error(getName(), "price must be a valid number");
                 }
             }
         }
         
         try {
-            // 调用服务方法
+            // Call service method
             Map<String, Object> result = new HashMap<>();
             
             if (isCreate) {
-                // 创建新产品
+                // Create new product
                 Object newProduct = productService.createProduct(parameters);
                 result.put("product_id", newProduct);
                 result.put("seller_id", parameters.get("seller_id"));
@@ -138,14 +138,14 @@ public class ProductManagementTool implements Tool {
                 result.put("price", parameters.get("price"));
                 result.put("created_at", new Date());
                 result.put("updated_at", null);
-                result.put("message", "产品创建成功");
+                result.put("message", "Product created successfully");
             } else {
-                // 更新现有产品
+                // Update existing product
                 String product_id = parameters.get("product_id").toString();
                 Object updatedProduct = productService.updateProduct(product_id, parameters);
                 
                 if (updatedProduct == null) {
-                    return ToolResponse.error(getName(), "未找到ID为 " + product_id + " 的产品");
+                    return ToolResponse.error(getName(), "Product with ID " + product_id + " not found");
                 }
                 
                 result.put("product_id", product_id);
@@ -156,12 +156,12 @@ public class ProductManagementTool implements Tool {
                 result.put("price", parameters.get("price"));
                 result.put("created_at", null);
                 result.put("updated_at", new Date());
-                result.put("message", "产品更新成功");
+                result.put("message", "Product updated successfully");
             }
             
             return ToolResponse.success(getName(), result);
         } catch (Exception e) {
-            return ToolResponse.error(getName(), "执行产品" + (isCreate ? "创建" : "更新") + "操作时发生错误: " + e.getMessage());
+            return ToolResponse.error(getName(), "Error occurred while " + (isCreate ? "creating" : "updating") + " product: " + e.getMessage());
         }
     }
 } 

@@ -3,20 +3,20 @@ package com.example.productapi.service;
 import java.util.Map;
 
 /**
- * 商品相似度搜索服务
+ * Product Similarity Search Service
  */
 public interface ProductSimilarityService {
     
     /**
-     * 查找相似商品
+     * Find similar products
      * 
-     * @param request 包含搜索参数:
-     *                - description: 商品描述文本，用于查找与此描述相似的商品
-     *                - productId: 商品ID，用于查找与此商品相似的其他商品
-     *                - limit: 返回结果的数量限制
-     * @return 包含结果的Map:
-     *         - products: 相似商品列表
-     *         - count: 返回的商品数量
+     * @param request Contains search parameters:
+     *                - description: Product description text, used to find products similar to this description
+     *                - productId: Product ID, used to find other products similar to this product
+     *                - limit: Limit on the number of results returned
+     * @return Map containing results:
+     *         - products: List of similar products
+     *         - count: Number of products returned
      */
     Map<String, Object> findSimilarProducts(Map<String, Object> request);
 } 

@@ -24,37 +24,37 @@ public class OrderListTool implements Tool {
     public OrderListTool(OrderService orderService) {
         this.orderService = orderService;
         
-        // 构建工具定义
+        // Build tool definition
         this.definition = ToolDefinition.builder()
                 .name("get_sellers_orders")
-                .displayName("订单列表查询")
-                .description("查询特定卖家的订单记录，支持时间范围和分页功能")
+                .displayName("Order List Query")
+                .description("Query order records for a specific seller, supporting time range and pagination")
                 .parameters(Arrays.asList(
                     ToolDefinition.ParameterDefinition.builder()
                         .name("seller_id")
                         .type("string")
-                        .description("卖家ID，必填参数，卖家不能查看别的卖家的订单")
+                        .description("Seller ID, required parameter, sellers cannot view other sellers' orders")
                         .required(true)
                         .example("SELLER789")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("start_time")
                         .type("string")
-                        .description("开始时间 (格式: yyyy/MM/dd)，可选参数，默认为2025/02/01")
+                        .description("Start time (format: yyyy/MM/dd), optional parameter, defaults to 2025/02/01")
                         .required(false)
                         .example("2025/02/01")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("end_time")
                         .type("string")
-                        .description("结束时间 (格式: yyyy/MM/dd)，可选参数，默认为2025/05/01")
+                        .description("End time (format: yyyy/MM/dd), optional parameter, defaults to 2025/05/01")
                         .required(false)
                         .example("2025/05/01")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("page")
                         .type("integer")
-                        .description("页码，从0开始，可选参数，默认为0（第一页）")
+                        .description("Page number, starting from 0, optional parameter, defaults to 0 (first page)")
                         .required(false)
                         .defaultValue(0)
                         .example(0)
@@ -62,19 +62,19 @@ public class OrderListTool implements Tool {
                     ToolDefinition.ParameterDefinition.builder()
                         .name("size")
                         .type("integer")
-                        .description("每页记录数，可选参数，默认为20，最大为100")
+                        .description("Records per page, optional parameter, defaults to 20, maximum 100")
                         .required(false)
                         .defaultValue(20)
                         .example(20)
                         .build()
                 ))
                 .outputSchema(Map.of(
-                    "orders", "订单列表",
-                    "current_page", "当前页码",
-                    "total_items", "总记录数",
-                    "total_pages", "总页数",
-                    "start_time", "查询开始时间",
-                    "end_time", "查询结束时间"
+                    "orders", "Order list",
+                    "current_page", "Current page number",
+                    "total_items", "Total number of records",
+                    "total_pages", "Total number of pages",
+                    "start_time", "Query start time",
+                    "end_time", "Query end time"
                 ))
                 .build();
     }
@@ -86,15 +86,15 @@ public class OrderListTool implements Tool {
     
     @Override
     public ToolResponse execute(Map<String, Object> parameters) {
-        // 验证必填参数
+        // Validate required parameters
         if (!parameters.containsKey("seller_id")) {
-            return ToolResponse.error(getName(), "seller_id是必填参数");
+            return ToolResponse.error(getName(), "seller_id is a required parameter");
         }
         
-        // 提取参数
+        // Extract parameters
         String sellerId = parameters.get("seller_id").toString();
         
-        // 处理时间参数
+        // Handle time parameters
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         LocalDateTime startTime = LocalDateTime.parse("2025/02/01 00:00:00", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
         LocalDateTime endTime = LocalDateTime.parse("2025/05/01 23:59:59", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
@@ -104,7 +104,7 @@ public class OrderListTool implements Tool {
                 startTime = LocalDateTime.parse(parameters.get("start_time").toString() + " 00:00:00", 
                     DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
             } catch (Exception e) {
-                return ToolResponse.error(getName(), "start_time格式无效，请使用yyyy/MM/dd格式");
+                return ToolResponse.error(getName(), "Invalid start_time format, please use yyyy/MM/dd format");
             }
         }
         
@@ -113,11 +113,11 @@ public class OrderListTool implements Tool {
                 endTime = LocalDateTime.parse(parameters.get("end_time").toString() + " 23:59:59", 
                     DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
             } catch (Exception e) {
-                return ToolResponse.error(getName(), "end_time格式无效，请使用yyyy/MM/dd格式");
+                return ToolResponse.error(getName(), "Invalid end_time format, please use yyyy/MM/dd format");
             }
         }
         
-        // 处理分页参数
+        // Handle pagination parameters
         int page = 0;
         if (parameters.containsKey("page")) {
             if (parameters.get("page") instanceof Integer) {
@@ -126,7 +126,7 @@ public class OrderListTool implements Tool {
                 try {
                     page = Integer.parseInt(parameters.get("page").toString());
                 } catch (NumberFormatException e) {
-                    return ToolResponse.error(getName(), "page必须是有效的整数");
+                    return ToolResponse.error(getName(), "page must be a valid integer");
                 }
             }
         }
@@ -139,18 +139,18 @@ public class OrderListTool implements Tool {
                 try {
                     size = Integer.parseInt(parameters.get("size").toString());
                 } catch (NumberFormatException e) {
-                    return ToolResponse.error(getName(), "size必须是有效的整数");
+                    return ToolResponse.error(getName(), "size must be a valid integer");
                 }
             }
             
-            // 限制每页最大记录数
+            // Limit maximum records per page
             if (size > 100) {
                 size = 100;
             }
         }
         
         try {
-            // 调用服务方法
+            // Call service method
             Page<Order> orderPage = orderService.getOrdersWithFilters(
                 sellerId,
                 null, // productId
@@ -161,7 +161,7 @@ public class OrderListTool implements Tool {
                 size
             );
             
-            // 构建响应
+            // Build response
             Map<String, Object> result = new HashMap<>();
             result.put("orders", convertOrders(orderPage.getContent()));
             result.put("current_page", orderPage.getNumber());
@@ -172,7 +172,7 @@ public class OrderListTool implements Tool {
             
             return ToolResponse.success(getName(), result);
         } catch (Exception e) {
-            return ToolResponse.error(getName(), "执行订单查询时发生错误: " + e.getMessage());
+            return ToolResponse.error(getName(), "Error occurred while executing order query: " + e.getMessage());
         }
     }
 

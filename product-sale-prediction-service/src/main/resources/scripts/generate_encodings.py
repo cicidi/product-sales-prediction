@@ -3,16 +3,16 @@ import numpy as np
 import os
 
 def generate_encoding_files():
-    # 获取当前工作目录
+    # Get current working directory
     current_dir = os.getcwd()
     print(f"Current working directory: {current_dir}")
     
-    # 创建模型目录（使用绝对路径）
+    # Create model directory (using absolute path)
     model_dir = os.path.abspath("../product-sale-prediction-AI/train/model")
     os.makedirs(model_dir, exist_ok=True)
     print(f"Created model directory: {model_dir}")
     
-    # 读取CSV文件
+    # Read CSV files
     try:
         products_file = "src/main/resources/final_sample_products.csv"
         sales_file = "src/main/resources/sales_2023_2025_realistic.csv"
@@ -26,32 +26,32 @@ def generate_encoding_files():
         print(f"Successfully loaded products data with {len(products_df)} rows")
         print(f"Successfully loaded sales data with {len(sales_df)} rows")
         
-        # 获取唯一的产品ID和卖家ID
+        # Get unique product IDs and seller IDs
         unique_product_ids = products_df['product_id'].unique()
         unique_seller_ids = sales_df['seller_id'].unique()
         
         print(f"Found {len(unique_product_ids)} unique products")
         print(f"Found {len(unique_seller_ids)} unique sellers")
         
-        # 创建编码映射
+        # Create encoding mappings
         product_encodings = {str(pid): idx for idx, pid in enumerate(unique_product_ids)}
         seller_encodings = {str(sid): idx for idx, sid in enumerate(unique_seller_ids)}
         
-        # 保存产品ID编码
+        # Save product ID encodings
         product_encodings_file = os.path.join(model_dir, "product_id_encodings.csv")
         with open(product_encodings_file, "w") as f:
             for product_id, encoding in product_encodings.items():
                 f.write(f"{product_id},{encoding}\n")
         print(f"Generated product encodings file: {product_encodings_file}")
         
-        # 保存卖家ID编码
+        # Save seller ID encodings
         seller_encodings_file = os.path.join(model_dir, "seller_id_encodings.csv")
         with open(seller_encodings_file, "w") as f:
             for seller_id, encoding in seller_encodings.items():
                 f.write(f"{seller_id},{encoding}\n")
         print(f"Generated seller encodings file: {seller_encodings_file}")
         
-        # 保存特征名称
+        # Save feature names
         feature_names = [
             "unit_price", "dayofweek", "day", "week", "month", "quarter", "year",
             "is_weekend", "is_month_start", "is_month_end", "product_id_enc",

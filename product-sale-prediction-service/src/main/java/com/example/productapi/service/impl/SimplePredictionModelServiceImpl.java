@@ -43,10 +43,10 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
         try {
             // 简单检查数据库连接
             long count = orderRepository.count();
-            logger.info("销售预测服务初始化成功，数据库中有 {} 条订单记录", count);
+            logger.info("Sales prediction service initialization succeeded, database has {} order records", count);
             initialized = true;
         } catch (Exception e) {
-            logger.error("销售预测服务初始化失败", e);
+            logger.error("Sales prediction service initialization failed", e);
             initialized = false;
         }
     }
@@ -59,33 +59,33 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
     @Override
     public Map<String, Object> predictFutureSales(String productId, String sellerId, Double unitPrice, Integer weeksAhead) {
         if (!initialized) {
-            logger.error("销售预测服务未初始化");
-            throw new IllegalStateException("销售预测服务未初始化");
+            logger.error("Sales prediction service not initialized");
+            throw new IllegalStateException("Sales prediction service not initialized");
         }
         
         if (weeksAhead == null || weeksAhead < 1) {
-            weeksAhead = 4; // 默认预测4周
+            weeksAhead = 4; // Default to predict 4 weeks
         }
         
         try {
-            // 获取该产品的历史销售数据
+            // Get historical sales data for this product
             List<Order> historicalOrders = getHistoricalOrders(productId, sellerId);
             
             if (historicalOrders.isEmpty()) {
-                logger.warn("没有找到产品 {} 的卖家 {} 的历史订单数据，使用模拟预测", productId, sellerId);
+                logger.warn("No historical order data found for product {} and seller {}, using mock prediction", productId, sellerId);
                 return generateMockPrediction(productId, sellerId, unitPrice, weeksAhead);
             }
             
-            // 计算统计指标
+            // Calculate statistical metrics
             Map<DayOfWeek, List<Integer>> salesByDayOfWeek = analyzeWeekdayPatterns(historicalOrders);
             Map<Integer, List<Integer>> salesByDayOfMonth = analyzeDayOfMonthPatterns(historicalOrders);
             double averageDailySales = calculateAverageDailySales(historicalOrders);
             double recentTrend = calculateRecentTrend(historicalOrders);
             
-            logger.info("产品 {} 卖家 {} 的平均日销量: {}, 近期趋势: {}",
-                    productId, sellerId, averageDailySales, recentTrend > 1.0 ? "上升" : "下降");
+            logger.info("Product {} seller {} average daily sales: {}, recent trend: {}",
+                    productId, sellerId, averageDailySales, recentTrend > 1.0 ? "increasing" : "decreasing");
             
-            // 准备预测结果
+            // Prepare prediction results
             Map<String, Object> prediction = new HashMap<>();
             prediction.put("product_id", productId);
             prediction.put("seller_id", sellerId);
@@ -94,11 +94,11 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
             List<Map<String, Object>> predictions = new ArrayList<>();
             LocalDate currentDate = LocalDate.now();
             
-            // 预测未来几周的销售情况
+            // Predict future sales for several weeks
             for (int week = 0; week < weeksAhead; week++) {
                 double weeklyTotal = 0;
                 
-                // 按天预测一周销量
+                // Predict daily sales for a week
                 for (int day = 0; day < 7; day++) {
                     LocalDate predictionDate = currentDate.plusWeeks(week).plusDays(day);
                     double dailyPrediction = predictSingleDay(
@@ -112,7 +112,7 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
                     weeklyTotal += dailyPrediction;
                 }
                 
-                // 创建每周预测
+                // Create weekly prediction
                 Map<String, Object> weekPrediction = new HashMap<>();
                 weekPrediction.put("week_number", week + 1);
                 weekPrediction.put("prediction_date", currentDate.plusWeeks(week).format(DateTimeFormatter.ISO_LOCAL_DATE));
@@ -121,7 +121,7 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
                 predictions.add(weekPrediction);
             }
             
-            // 设置历史数据信息
+            // Set historical data information
             LocalDateTime firstOrderTime = historicalOrders.get(0).getTimestamp();
             LocalDateTime lastOrderTime = historicalOrders.get(historicalOrders.size() - 1).getTimestamp();
             
@@ -135,13 +135,13 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
             
             return prediction;
         } catch (Exception e) {
-            logger.error("销售预测失败", e);
+            logger.error("Sales prediction failed", e);
             return generateMockPrediction(productId, sellerId, unitPrice, weeksAhead);
         }
     }
     
     /**
-     * 预测单天的销量
+     * Predict daily sales
      */
     private double predictSingleDay(LocalDate date, 
                                   Map<DayOfWeek, List<Integer>> salesByDayOfWeek,
@@ -150,7 +150,7 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
                                   double recentTrend,
                                   int weekAhead) {
         
-        // 考虑星期几因素（周末通常销量不同）
+        // Consider weekday factor (weekend usually has different sales)
         List<Integer> dayOfWeekSales = salesByDayOfWeek.getOrDefault(date.getDayOfWeek(), new ArrayList<>());
         double dayOfWeekFactor = 1.0;
         if (!dayOfWeekSales.isEmpty()) {
@@ -158,7 +158,7 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
             dayOfWeekFactor = avgForThisDay / averageDailySales;
         }
         
-        // 考虑每月相同日期的因素（月初或月末可能有特殊模式）
+        // Consider monthly same date factor (beginning or end of month may have special patterns)
         List<Integer> dayOfMonthSales = salesByDayOfMonth.getOrDefault(date.getDayOfMonth(), new ArrayList<>());
         double dayOfMonthFactor = 1.0;
         if (!dayOfMonthSales.isEmpty()) {
@@ -166,25 +166,25 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
             dayOfMonthFactor = avgForThisMonthDay / averageDailySales;
         }
         
-        // 应用趋势因素（预测越远，趋势影响越大）
-        double trendFactor = Math.pow(recentTrend, weekAhead * 0.5); // 随时间平滑衰减趋势影响
+        // Apply trend factor (predictive power decreases with time)
+        double trendFactor = Math.pow(recentTrend, weekAhead * 0.5); // Trend impact decreases with time
         
-        // 季节模式可以在此添加
+        // Seasonal pattern can be added here
         
-        // 综合各种因素
+        // Combine various factors
         double prediction = averageDailySales * dayOfWeekFactor * dayOfMonthFactor * trendFactor;
         
-        // 确保预测值非负
+        // Ensure prediction value is non-negative
         return Math.max(0, prediction);
     }
     
     /**
-     * 分析星期几的销售模式
+     * Analyze weekday sales patterns
      */
     private Map<DayOfWeek, List<Integer>> analyzeWeekdayPatterns(List<Order> orders) {
         Map<DayOfWeek, List<Integer>> salesByDayOfWeek = new EnumMap<>(DayOfWeek.class);
         
-        // 按星期几分组销量
+        // Group sales by weekday
         for (Order order : orders) {
             DayOfWeek dayOfWeek = order.getTimestamp().getDayOfWeek();
             salesByDayOfWeek.computeIfAbsent(dayOfWeek, k -> new ArrayList<>())
@@ -195,12 +195,12 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
     }
     
     /**
-     * 分析月份日期的销售模式
+     * Analyze monthly date sales patterns
      */
     private Map<Integer, List<Integer>> analyzeDayOfMonthPatterns(List<Order> orders) {
         Map<Integer, List<Integer>> salesByDayOfMonth = new HashMap<>();
         
-        // 按月份中的日期分组销量
+        // Group sales by date in month
         for (Order order : orders) {
             int dayOfMonth = order.getTimestamp().getDayOfMonth();
             salesByDayOfMonth.computeIfAbsent(dayOfMonth, k -> new ArrayList<>())
@@ -211,10 +211,10 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
     }
     
     /**
-     * 计算平均日销量
+     * Calculate average daily sales
      */
     private double calculateAverageDailySales(List<Order> orders) {
-        // 按日期分组，计算每天的总销量
+        // Group sales by date, calculate total sales for each day
         Map<LocalDate, Integer> dailySales = new HashMap<>();
         
         for (Order order : orders) {
@@ -222,7 +222,7 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
             dailySales.merge(date, order.getQuantity(), Integer::sum);
         }
         
-        // 计算所有日期的平均值
+        // Calculate average value of all dates
         return dailySales.values().stream()
                 .mapToInt(Integer::intValue)
                 .average()
@@ -230,32 +230,32 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
     }
     
     /**
-     * 计算最近的销售趋势（上升/下降）
+     * Calculate recent sales trend (increasing/decreasing)
      */
     private double calculateRecentTrend(List<Order> orders) {
         if (orders.size() < 14) {
-            return 1.0; // 数据不足，返回无变化
+            return 1.0; // Insufficient data, return no change
         }
         
-        // 对订单按时间戳排序
+        // Sort orders by timestamp
         orders.sort(Comparator.comparing(Order::getTimestamp));
         
-        // 按日期分组，计算每天的总销量
+        // Group sales by date, calculate total sales for each day
         Map<LocalDate, Integer> dailySales = new HashMap<>();
         for (Order order : orders) {
             LocalDate date = order.getTimestamp().toLocalDate();
             dailySales.merge(date, order.getQuantity(), Integer::sum);
         }
         
-        // 获取唯一日期并排序
+        // Get unique dates and sort
         List<LocalDate> dates = new ArrayList<>(dailySales.keySet());
         dates.sort(Comparator.naturalOrder());
         
         if (dates.size() < 14) {
-            return 1.0; // 天数不足，返回无变化
+            return 1.0; // Insufficient days, return no change
         }
         
-        // 计算前半部分和后半部分的平均日销量
+        // Calculate average daily sales for first half and second half
         int midPoint = dates.size() / 2;
         List<LocalDate> firstHalf = dates.subList(0, midPoint);
         List<LocalDate> secondHalf = dates.subList(midPoint, dates.size());
@@ -270,21 +270,21 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
                 .average()
                 .orElse(0.0);
         
-        // 避免除以零
+        // Avoid division by zero
         if (firstHalfAvg == 0) {
-            return secondHalfAvg > 0 ? 1.5 : 1.0; // 如果前半部分为0但后半部分有销量，则认为是上升趋势
+            return secondHalfAvg > 0 ? 1.5 : 1.0; // If first half is 0 but second half has sales, consider it increasing trend
         }
         
-        // 计算趋势比例
+        // Calculate trend ratio
         return secondHalfAvg / firstHalfAvg;
     }
     
     /**
-     * 获取所有历史订单数据
+     * Get all historical order data
      */
     private List<Order> getHistoricalOrders(String productId, String sellerId) {
-        // 使用一个很早的日期确保获取全部历史数据
-        LocalDateTime longTimeAgo = LocalDateTime.now().minusYears(10); // 10年前
+        // Use a very early date to ensure getting all historical data
+        LocalDateTime longTimeAgo = LocalDateTime.now().minusYears(10); // 10 years ago
         List<Order> orders = orderRepository.findBySellerIdAndProductIdAndTimestampAfter(
                 sellerId, productId, longTimeAgo);
         
@@ -292,7 +292,7 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
             return Collections.emptyList();
         }
         
-        // 按时间戳排序
+        // Sort by timestamp
         orders.sort(Comparator.comparing(Order::getTimestamp));
         return orders;
     }
@@ -304,13 +304,13 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
             List<Map<String, Object>> predictions = (List<Map<String, Object>>) prediction.get("predictions");
             return predictions != null ? predictions : new ArrayList<>();
         } catch (ClassCastException e) {
-            logger.error("预测格式无效", e);
+            logger.error("Invalid prediction format", e);
             return new ArrayList<>();
         }
     }
     
     /**
-     * 生成模拟预测
+     * Generate mock prediction
      */
     private Map<String, Object> generateMockPrediction(String productId, String sellerId, Double unitPrice, Integer weeksAhead) {
         Map<String, Object> prediction = new HashMap<>();
@@ -328,7 +328,7 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
             weekPrediction.put("week_number", week + 1);
             weekPrediction.put("prediction_date", LocalDate.now().plusWeeks(week).format(DateTimeFormatter.ISO_LOCAL_DATE));
             
-            // 添加一些随机性但遵循趋势
+            // Add some randomness but follow trend
             double weeklyFactor = 1.0 + (week * 0.05) + (random.nextDouble() * 0.1 - 0.05);
             double predictedSales = baseQuantity * weeklyFactor;
             
@@ -338,8 +338,8 @@ public class SimplePredictionModelServiceImpl implements MLModelService {
         
         prediction.put("predictions", predictions);
         prediction.put("historical_data_used", Map.of(
-                "start_date", "模拟数据",
-                "end_date", "模拟数据",
+                "start_date", "Mock data",
+                "end_date", "Mock data",
                 "total_days", 0,
                 "order_count", 0
         ));

@@ -1,64 +1,128 @@
-# API Chatbot with LangChain
+# AI Sales Assistant
 
-A command-line chatbot that connects to API endpoints defined in an OpenAPI specification using LangChain.
+An intelligent sales assistant built with LangChain and Streamlit that dynamically loads tools from a Swagger API to help sellers analyze data, make predictions, and visualize sales information.
 
 ## Features
 
-- Parses OpenAPI (Swagger) YAML files to understand API endpoints
-- Uses LangChain and OpenAI to create an intelligent chat interface
-- Makes API calls on behalf of the user
-- Provides colored command-line interface
+- 🤖 Dynamic tool loading from Swagger/OpenAPI specification
+- 💬 Natural language interface for querying sales data
+- 📊 Automatic data visualization with charts
+- 🔄 Context-aware conversations
+- 🛠️ Extensible tool system
+- 📝 Chat history persistence
+- 🎨 Modern, responsive UI
 
-## Setup
+## Prerequisites
 
-### Prerequisites
+- Python 3.8+
+- OpenAI API key
+- Running backend server with Model-Centric Protocol endpoints
 
-- Python 3.8 or higher
-- An OpenAI API key
+## Installation
 
-### Installation
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd product-sale-prediction-AI
+```
 
-1. Clone this repository
-2. Install the required packages:
+2. Create and activate a virtual environment:
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
 
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file in the project root with the following content:
-
+4. Create a `.env` file in the project root and add your OpenAI API key:
 ```
-OPENAI_API_KEY=your_openai_api_key_here
-API_SERVER_URL=http://localhost:8080
-API_KEY=your_api_key_here  # Optional if your API requires authentication
+OPENAI_API_KEY=your_api_key_here
 ```
 
 ## Usage
 
-Run the chatbot:
+1. Ensure your backend server is running on `http://localhost:8080`
 
+2. Start the Streamlit application:
 ```bash
-python api_chatbot.py
+streamlit run chat_sales_assistant.py
 ```
 
-You can now interact with the chatbot by typing natural language queries. The chatbot will:
+3. Open your browser and navigate to the URL shown in the terminal (usually `http://localhost:8501`)
 
-1. Interpret your request
-2. Determine which API endpoint to call
-3. Make the API call
-4. Present the results in a user-friendly format
+## Project Structure
 
-Example commands:
+```
+.
+├── README.md
+├── requirements.txt
+├── .env
+├── chat_sales_assistant.py    # Main Streamlit application
+└── tools/
+    └── mcp_tool_loader.py     # Dynamic tool loader for MCP endpoints
+```
 
-- "Show me all products"
-- "Find products in the Electronics category"
-- "What endpoints are available in this API?"
+## Features
 
-Type 'exit' or 'quit' to exit the chatbot.
+### Dynamic Tool Loading
+- Automatically loads tools from Swagger/OpenAPI specification
+- Filters for "Model-Centric Protocol" tagged endpoints
+- Handles both GET and POST requests
+- Supports path parameters, query parameters, and request bodies
 
-## Files
+### Chat Interface
+- Natural language interaction
+- Context-aware responses
+- Chat history persistence
+- Error handling and debug information
 
-- `api_chatbot.py`: Main chatbot application
-- `api_parser.py`: Utilities for parsing OpenAPI specifications
-- `api_service.py`: Service for making API calls
-- `requirements.txt`: Python dependencies 
+### Data Visualization
+- Automatic chart generation based on data type
+- Support for various chart types (bar, line, etc.)
+- Summary statistics display
+- Raw data viewing option
+
+## Development
+
+To add new features or modify existing ones:
+
+1. Tool Loader (`tools/mcp_tool_loader.py`):
+   - Handles Swagger spec parsing
+   - Creates LangChain tools
+   - Manages API interactions
+
+2. Main App (`chat_sales_assistant.py`):
+   - Streamlit UI components
+   - LangChain agent configuration
+   - Visualization logic
+   - Session state management
+
+## Troubleshooting
+
+1. **API Connection Issues**
+   - Ensure the backend server is running
+   - Check the base URL configuration
+   - Verify the API endpoints are accessible
+
+2. **OpenAI API Issues**
+   - Verify your API key is correctly set in `.env`
+   - Check your API usage and limits
+
+3. **Visualization Errors**
+   - Ensure the data format matches expected structure
+   - Check for missing or null values
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 

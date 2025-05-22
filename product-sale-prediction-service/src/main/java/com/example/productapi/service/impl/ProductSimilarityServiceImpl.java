@@ -22,42 +22,42 @@ public class ProductSimilarityServiceImpl implements ProductSimilarityService {
     }
     
     /**
-     * 查找相似商品
+     * Find similar products
      */
     @Override
     public Map<String, Object> findSimilarProducts(Map<String, Object> request) {
-        // 创建请求对象
+        // Create search request object
         SimilarProductSearchRequest searchRequest = new SimilarProductSearchRequest();
         
-        // 设置描述文本（如果有）
+        // Set description text (if provided)
         if (request.containsKey("description")) {
             searchRequest.setDescription(request.get("description").toString());
         }
         
-        // 设置商品ID（如果有）
+        // Set product ID (if provided)
         if (request.containsKey("productId")) {
             searchRequest.setProductId(request.get("productId").toString());
         }
         
-        // 获取结果数量限制（如果有）
-        int limit = 10; // 默认限制为10个结果
+        // Get result limit (if provided)
+        int limit = 10; // Default limit is 10 results
         if (request.containsKey("limit")) {
             try {
                 limit = Integer.parseInt(request.get("limit").toString());
             } catch (NumberFormatException e) {
-                // 使用默认值
+                // Use default value
             }
         }
         
-        // 调用产品服务查找相似产品
+        // Call product service to find similar products
         List<Product> similarProducts = productService.findSimilarProducts(searchRequest);
         
-        // 应用限制（如果需要）
+        // Apply limit (if needed)
         if (similarProducts.size() > limit) {
             similarProducts = similarProducts.subList(0, limit);
         }
         
-        // 构建响应
+        // Build response
         Map<String, Object> result = new HashMap<>();
         result.put("products", similarProducts);
         result.put("count", similarProducts.size());

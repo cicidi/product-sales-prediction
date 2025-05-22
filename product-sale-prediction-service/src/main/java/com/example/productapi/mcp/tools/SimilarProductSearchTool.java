@@ -25,40 +25,40 @@ public class SimilarProductSearchTool implements Tool {
     this.similarityService = similarityService;
     this.productService = productService;
 
-    // 构建工具定义
+    // Build tool definition
     this.definition = ToolDefinition.builder()
         .name("search_similar_products")
-        .displayName("相似商品搜索")
-        .description("基于文本描述或商品ID查找相似的商品，使用向量相似度检索技术")
+        .displayName("Similar Product Search")
+        .description("Find similar products based on text description or product ID using vector similarity search technology")
         .parameters(Arrays.asList(
             ToolDefinition.ParameterDefinition.builder()
                 .name("description")
                 .type("string")
-                .description("商品描述文本，用于查找与此描述相似的商品")
+                .description("Product description text, used to find products similar to this description")
                 .required(false)
-                .example("无线降噪耳机，支持蓝牙连接")
+                .example("Wireless noise-canceling headphones with Bluetooth connectivity")
                 .build(),
             ToolDefinition.ParameterDefinition.builder()
                 .name("product_id")
                 .type("string")
-                .description("商品ID，用于查找与此商品相似的其他商品")
+                .description("Product ID, used to find other products similar to this product")
                 .required(false)
                 .example("P123456")
                 .build(),
             ToolDefinition.ParameterDefinition.builder()
                 .name("limit")
                 .type("integer")
-                .description("返回结果的数量限制")
+                .description("Limit on the number of results returned")
                 .required(false)
                 .defaultValue(3)
                 .example(3)
                 .build()
         ))
         .outputSchema(Map.of(
-            "similar_products", "相似商品列表",
-            "total_count", "返回的商品数量",
-            "query_type", "查询类型（description或product_id）",
-            "query_value", "查询值"
+            "similar_products", "List of similar products",
+            "total_count", "Number of products returned",
+            "query_type", "Query type (description or product_id)",
+            "query_value", "Query value"
         ))
         .build();
   }
@@ -70,18 +70,18 @@ public class SimilarProductSearchTool implements Tool {
 
   @Override
   public ToolResponse execute(Map<String, Object> parameters) {
-    // 验证参数
+    // Validate parameters
     if (!parameters.containsKey("description") && !parameters.containsKey("product_id")) {
-      return ToolResponse.error(getName(), "必须提供description或product_id参数之一");
+      return ToolResponse.error(getName(), "Either description or product_id parameter must be provided");
     }
 
-    // 提取参数
+    // Extract parameters
     String description =
         parameters.containsKey("description") ? parameters.get("description").toString() : null;
     String productId =
         parameters.containsKey("product_id") ? parameters.get("product_id").toString() : null;
 
-    // 处理limit参数
+    // Handle limit parameter
     int limit = 3;
     if (parameters.containsKey("limit")) {
       if (parameters.get("limit") instanceof Integer) {
@@ -90,17 +90,17 @@ public class SimilarProductSearchTool implements Tool {
         try {
           limit = Integer.parseInt(parameters.get("limit").toString());
         } catch (NumberFormatException e) {
-          return ToolResponse.error(getName(), "limit必须是有效的整数");
+          return ToolResponse.error(getName(), "limit must be a valid integer");
         }
       }
     }
 
     try {
-      // 调用服务方法
+      // Call service method
       List<Product> similarProducts = productService.findSimilarProducts(
           new SimilarProductSearchRequest(productId, description));
 
-      // 构建响应
+      // Build response
       Map<String, Object> response = new HashMap<>();
       response.put("similar_products", similarProducts);
       response.put("total_count", similarProducts.size());
@@ -109,7 +109,7 @@ public class SimilarProductSearchTool implements Tool {
 
       return ToolResponse.success(getName(), response);
     } catch (Exception e) {
-      return ToolResponse.error(getName(), "执行相似产品搜索时发生错误: " + e.getMessage());
+      return ToolResponse.error(getName(), "Error occurred while searching for similar products: " + e.getMessage());
     }
   }
 } 

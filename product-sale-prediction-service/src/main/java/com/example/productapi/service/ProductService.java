@@ -34,25 +34,25 @@ public interface ProductService {
     List<Product> findSimilarProducts(SimilarProductSearchRequest request);
 
     /**
-     * 创建新产品
+     * Create new product
      * 
-     * @param productData 产品数据字段映射:
-     *                    - name: 产品名称
-     *                    - category: 产品类别
-     *                    - brand: 产品品牌
-     *                    - price: 产品价格
-     *                    - description: 产品描述(可选)
-     *                    - sellerId: 卖家ID
-     * @return 创建的产品
+     * @param productData Product data mapping:
+     *                    - name: Product name
+     *                    - category: Product category
+     *                    - brand: Product brand
+     *                    - price: Product price
+     *                    - description: Product description (optional)
+     *                    - sellerId: Seller ID
+     * @return Created product
      */
     Product createProduct(Map<String, Object> productData);
     
     /**
-     * 更新产品
+     * Update product
      * 
-     * @param id 要更新的产品ID
-     * @param productData 需要更新的产品字段映射
-     * @return 更新后的产品，如果产品不存在则返回null
+     * @param id Product ID to update
+     * @param productData Mapping of product fields to update
+     * @return Updated product, returns null if product doesn't exist
      */
     Product updateProduct(String id, Map<String, Object> productData);
 } 
