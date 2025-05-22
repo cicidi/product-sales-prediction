@@ -29,7 +29,8 @@ public class SimilarProductSearchTool implements Tool {
     this.definition = ToolDefinition.builder()
         .name("search_similar_products")
         .displayName("Similar Product Search")
-        .description("Find similar products based on text description or product ID using vector similarity search technology")
+        .description("Find similar products based on product ID or description")
+        .operationId("search_similar_products")
         .parameters(Arrays.asList(
             ToolDefinition.ParameterDefinition.builder()
                 .name("description")

@@ -25,8 +25,9 @@ public class ProductSearchTool implements Tool {
     // Build the tool definition
     this.definition = ToolDefinition.builder()
         .name("search_products")
-        .displayName("Search Products")
-        .description("Search for similar products using either a Product ID or product description")
+        .displayName("Product Search")
+        .description("Search products by keywords and optional filters")
+        .operationId("search_products")
         .parameters(Arrays.asList(
             ToolDefinition.ParameterDefinition.builder()
                 .name("product_id")

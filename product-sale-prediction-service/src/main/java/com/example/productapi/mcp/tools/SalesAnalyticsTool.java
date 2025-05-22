@@ -27,9 +27,10 @@ public class SalesAnalyticsTool implements Tool {
         
         // Initialize tool definition
         this.definition = ToolDefinition.builder()
-            .name("sales_analytics")
+            .name("analyze_sales")
             .displayName("Sales Analytics")
-            .description("Get analytics for top selling products by time range, category, and seller ID")
+            .description("Analyze historical sales data to provide insights and trends")
+            .operationId("analyze_sales")
             .parameters(Arrays.asList(
                 ToolDefinition.ParameterDefinition.builder()
                     .name("seller_id")

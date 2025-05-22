@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +22,15 @@ public class OpenApiConfig {
     @Value("${server.port:8080}")
     private String serverPort;
     
+    private final MCPOpenApiCustomizer mcpOpenApiCustomizer;
+
+    public OpenApiConfig(MCPOpenApiCustomizer mcpOpenApiCustomizer) {
+        this.mcpOpenApiCustomizer = mcpOpenApiCustomizer;
+    }
+    
     @Bean
     public OpenAPI productApiOpenAPI() {
-        return new OpenAPI()
+        OpenAPI openAPI = new OpenAPI()
                 .info(new Info().title("E-commerce Product Prediction API")
                         .description("Intelligent E-commerce API with vector search, analytics, and prediction capabilities")
                         .version("v1.0.0")
@@ -48,5 +55,10 @@ public class OpenApiConfig {
                                 .type(SecurityScheme.Type.APIKEY)
                                 .in(SecurityScheme.In.HEADER)
                                 .name("api-key")));
+
+        // Apply MCP customizer
+        mcpOpenApiCustomizer.customise(openAPI);
+        
+        return openAPI;
     }
 } 

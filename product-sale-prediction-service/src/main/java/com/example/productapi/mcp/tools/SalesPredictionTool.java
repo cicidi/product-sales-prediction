@@ -28,9 +28,10 @@ public class SalesPredictionTool implements Tool {
         
         // Build the tool definition based on the Swagger API
         this.definition = ToolDefinition.builder()
-                .name("predict_sales")
+                .name("predict_product_sales")
                 .displayName("Sales Prediction")
-                .description("Predict sales volume and revenue for specific products in future time periods based on historical data, helping sellers make better inventory and marketing decisions")
+                .description("Predict future sales for a specific product")
+                .operationId("predict_product_sales")
                 .parameters(Arrays.asList(
                     ToolDefinition.ParameterDefinition.builder()
                         .name("product_id")

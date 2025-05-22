@@ -23,7 +23,8 @@ public class ProductManagementTool implements Tool {
         this.definition = ToolDefinition.builder()
                 .name("manage_product")
                 .displayName("Product Management")
-                .description("Create new product or update existing product information")
+                .description("Create, update, or delete product information")
+                .operationId("manage_product")
                 .parameters(Arrays.asList(
                     ToolDefinition.ParameterDefinition.builder()
                         .name("product_id")

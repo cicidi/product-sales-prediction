@@ -22,9 +22,10 @@ public class ProductDetailTool implements Tool {
 
     // Build tool definition - using snake_case
     this.definition = ToolDefinition.builder()
-        .name("get_product_by_id")
-        .displayName("Product Detail Query")
-        .description("Get detailed product information by product ID")
+        .name("get_product_detail")
+        .displayName("Product Detail")
+        .description("Get detailed information about a specific product")
+        .operationId("get_product_detail")
         .parameters(Arrays.asList(
             ToolDefinition.ParameterDefinition.builder()
                 .name("product_id")

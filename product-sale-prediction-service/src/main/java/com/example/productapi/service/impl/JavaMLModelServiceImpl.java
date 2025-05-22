@@ -34,8 +34,8 @@ import java.util.stream.Collectors;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
- * 原生Java实现的ML模型服务，直接在JVM中加载和运行模型
- * 需要添加以下Maven依赖：
+ * Native Java implementation of ML model service, loading and running models directly in JVM
+ * Requires the following Maven dependencies:
  * - org.jpmml:pmml-evaluator:1.6.4
  * - org.jpmml:pmml-evaluator-extension:1.6.4
  */
@@ -49,12 +49,12 @@ public class JavaMLModelServiceImpl implements MLModelService {
     private boolean modelInitialized = false;
     private Path modelBasePath;
     
-    // 模型评估器
+    // Model evaluator
     private Evaluator evaluator;
-    // 产品和卖家编码映射
+    // Product and seller encoding mappings
     private Map<String, Integer> productIdEncodings = new HashMap<>();
     private Map<String, Integer> sellerIdEncodings = new HashMap<>();
-    // 模型特征名称列表
+    // Model feature names list
     private List<String> featureNames = new ArrayList<>();
     
     @Autowired
@@ -67,104 +67,104 @@ public class JavaMLModelServiceImpl implements MLModelService {
     @Override
     public void initializeModel() {
         try {
-            // 获取当前项目的根目录
+            // Get current project root directory
             Path currentPath = Paths.get("").toAbsolutePath();
             modelBasePath = currentPath.resolve(modelBasePathStr).normalize();
             File modelDir = modelBasePath.toFile();
             
-            logger.info("正在检查模型目录: {}", modelBasePath);
+            logger.info("Checking model directory: {}", modelBasePath);
             
             if (!modelDir.exists() || !modelDir.isDirectory()) {
-                logger.error("模型目录不存在或不是一个有效的目录: {}", modelBasePath);
+                logger.error("Model directory does not exist or is not a valid directory: {}", modelBasePath);
                 return;
             }
             
-            // 检查PMML模型文件
+            // Check PMML model file
             File pmmlFile = modelBasePath.resolve("xgb_sales_forecast_model.pmml").toFile();
             
             if (!pmmlFile.exists()) {
-                logger.error("PMML模型文件不存在: {}", pmmlFile.getAbsolutePath());
-                logger.info("请确保模型文件位于正确的目录: {}", modelBasePath);
+                logger.error("PMML model file does not exist: {}", pmmlFile.getAbsolutePath());
+                logger.info("Please ensure the model file is in the correct directory: {}", modelBasePath);
                 return;
             }
             
-            // 加载PMML模型
-            logger.info("正在加载PMML模型: {}", pmmlFile.getAbsolutePath());
+            // Load PMML model
+            logger.info("Loading PMML model: {}", pmmlFile.getAbsolutePath());
             PMML pmml = PMMLUtil.unmarshal(new FileInputStream(pmmlFile));
             Model model = pmml.getModels().get(0);
             evaluator = ModelEvaluatorFactory.newInstance().newModelEvaluator(pmml, model);
             evaluator.verify();
             
-            // 加载编码映射
+            // Load encoding mappings
             loadEncodings();
             
-            // 加载特征名称
+            // Load feature names
             loadFeatureNames();
             
-            logger.info("Java ML模型成功加载: {}", modelBasePath);
+            logger.info("Java ML model successfully loaded: {}", modelBasePath);
             modelInitialized = true;
             
-            // 输出一些模型信息
-            logger.info("模型目标字段: {}", evaluator.getTargetFields());
-            logger.info("模型输入字段: {}", evaluator.getActiveFields());
-            logger.info("可用产品数量: {}", productIdEncodings.size());
-            logger.info("可用卖家数量: {}", sellerIdEncodings.size());
+            // Output some model information
+            logger.info("Model target fields: {}", evaluator.getTargetFields());
+            logger.info("Model input fields: {}", evaluator.getActiveFields());
+            logger.info("Available products: {}", productIdEncodings.size());
+            logger.info("Available sellers: {}", sellerIdEncodings.size());
             
         } catch (Exception e) {
-            logger.error("初始化Java ML模型失败", e);
+            logger.error("Failed to initialize Java ML model", e);
             modelInitialized = false;
         }
     }
     
     /**
-     * 加载产品和卖家的编码映射
+     * Load product and seller encoding mappings
      */
     private void loadEncodings() throws Exception {
-        // 加载产品ID编码映射
+        // Load product ID encoding mapping
         Path productEncodingsPath = modelBasePath.resolve("product_id_encodings.csv");
         if (Files.exists(productEncodingsPath)) {
             try {
                 Files.lines(productEncodingsPath)
-                    .skip(1) // 跳过标题行
+                    .skip(1) // Skip header row
                     .forEach(line -> {
                         String[] parts = line.split(",");
                         if (parts.length == 2) {
                             productIdEncodings.put(parts[0].trim(), Integer.parseInt(parts[1].trim()));
                         }
                     });
-                logger.info("成功加载 {} 个产品ID编码", productIdEncodings.size());
+                logger.info("Successfully loaded {} product ID encodings", productIdEncodings.size());
             } catch (Exception e) {
-                logger.error("加载产品编码文件失败: {}", productEncodingsPath, e);
+                logger.error("Failed to load product encoding file: {}", productEncodingsPath, e);
                 throw e;
             }
         } else {
-            logger.warn("产品编码文件不存在: {}", productEncodingsPath);
-            // 创建空的映射文件
+            logger.warn("Product encoding file does not exist: {}", productEncodingsPath);
+            // Create empty mapping file
             try (BufferedWriter writer = Files.newBufferedWriter(productEncodingsPath)) {
                 writer.write("product_id,encoding\n");
             }
         }
         
-        // 加载卖家ID编码映射
+        // Load seller ID encoding mapping
         Path sellerEncodingsPath = modelBasePath.resolve("seller_id_encodings.csv");
         if (Files.exists(sellerEncodingsPath)) {
             try {
                 Files.lines(sellerEncodingsPath)
-                    .skip(1) // 跳过标题行
+                    .skip(1) // Skip header row
                     .forEach(line -> {
                         String[] parts = line.split(",");
                         if (parts.length == 2) {
                             sellerIdEncodings.put(parts[0].trim(), Integer.parseInt(parts[1].trim()));
                         }
                     });
-                logger.info("成功加载 {} 个卖家ID编码", sellerIdEncodings.size());
+                logger.info("Successfully loaded {} seller ID encodings", sellerIdEncodings.size());
             } catch (Exception e) {
-                logger.error("加载卖家编码文件失败: {}", sellerEncodingsPath, e);
+                logger.error("Failed to load seller encoding file: {}", sellerEncodingsPath, e);
                 throw e;
             }
         } else {
-            logger.warn("卖家编码文件不存在: {}", sellerEncodingsPath);
-            // 创建空的映射文件
+            logger.warn("Seller encoding file does not exist: {}", sellerEncodingsPath);
+            // Create empty mapping file
             try (BufferedWriter writer = Files.newBufferedWriter(sellerEncodingsPath)) {
                 writer.write("seller_id,encoding\n");
             }
@@ -172,21 +172,21 @@ public class JavaMLModelServiceImpl implements MLModelService {
     }
     
     /**
-     * 加载模型特征名称
+     * Load model feature names
      */
     private void loadFeatureNames() throws Exception {
         Path featureNamesPath = modelBasePath.resolve("feature_names.txt");
         if (Files.exists(featureNamesPath)) {
             try {
                 featureNames = Files.readAllLines(featureNamesPath);
-                logger.info("成功加载 {} 个特征名称", featureNames.size());
+                logger.info("Successfully loaded {} feature names", featureNames.size());
             } catch (Exception e) {
-                logger.error("加载特征名称文件失败: {}", featureNamesPath, e);
+                logger.error("Failed to load feature names file: {}", featureNamesPath, e);
                 throw e;
             }
         } else {
-            logger.warn("特征名称文件不存在: {}", featureNamesPath);
-            // 使用默认特征名称
+            logger.warn("Feature names file does not exist: {}", featureNamesPath);
+            // Use default feature names
             featureNames = Arrays.asList(
                 "unit_price", "dayofweek", "day", "week", "month", "quarter", "year",
                 "is_weekend", "is_month_start", "is_month_end", "product_id_enc",
@@ -197,7 +197,7 @@ public class JavaMLModelServiceImpl implements MLModelService {
                 "rolling_mean_7d", "rolling_std_7d", "rolling_mean_14d", "rolling_std_14d",
                 "rolling_mean_30d", "rolling_std_30d"
             );
-            // 创建特征名称文件
+            // Create feature names file
             try (BufferedWriter writer = Files.newBufferedWriter(featureNamesPath)) {
                 for (String feature : featureNames) {
                     writer.write(feature);
@@ -215,26 +215,26 @@ public class JavaMLModelServiceImpl implements MLModelService {
     @Override
     public Map<String, Object> predictFutureSales(String productId, String sellerId, Double unitPrice, Integer weeksAhead) {
         if (!modelInitialized) {
-            logger.error("ML模型未初始化，无法进行预测");
-            throw new IllegalStateException("ML模型未初始化");
+            logger.error("ML model not initialized, cannot make predictions");
+            throw new IllegalStateException("ML model not initialized");
         }
         
         if (weeksAhead == null || weeksAhead < 1) {
-            weeksAhead = 4; // 默认预测4周
+            weeksAhead = 4; // Default to predict 4 weeks
         }
         
         try {
-            // 从数据库获取该卖家的所有历史销售数据
+            // Get all historical sales data for this seller from database
             List<Double> historicalSales = getHistoricalSales(productId, sellerId);
             
             if (historicalSales.isEmpty()) {
-                logger.warn("没有找到卖家 {} 的产品 {} 的历史销售数据，无法进行准确预测", sellerId, productId);
+                logger.warn("No historical sales data found for seller {} and product {}, cannot make accurate predictions", sellerId, productId);
                 return generateMockPrediction(productId, sellerId, unitPrice, weeksAhead);
             }
             
-            logger.info("为产品 {} 和卖家 {} 获取到 {} 条历史销售记录", productId, sellerId, historicalSales.size());
+            logger.info("Retrieved {} historical sales records for product {} and seller {}", historicalSales.size(), productId, sellerId);
             
-            // 准备预测结果
+            // Prepare prediction results
             Map<String, Object> prediction = new HashMap<>();
             prediction.put("product_id", productId);
             prediction.put("seller_id", sellerId);
@@ -243,7 +243,7 @@ public class JavaMLModelServiceImpl implements MLModelService {
             List<Map<String, Object>> predictions = new ArrayList<>();
             LocalDate currentDate = LocalDate.now();
             
-            // 为每周进行预测
+            // Make predictions for each week
             for (int week = 0; week < weeksAhead; week++) {
                 // Calculate prediction date
                 LocalDate predictionDate = currentDate.plusWeeks(week);
@@ -280,23 +280,23 @@ public class JavaMLModelServiceImpl implements MLModelService {
             prediction.put("predictions", predictions);
             prediction.put("historical_data_used", Map.of(
                     "start_date", startDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
-                    "end_date", endDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    "end_time", endDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
                     "total_days", historicalSales.size()
             ));
             
             return prediction;
         } catch (Exception e) {
-            logger.error("销售预测失败", e);
+            logger.error("Sales prediction failed", e);
             return generateMockPrediction(productId, sellerId, unitPrice, weeksAhead);
         }
     }
     
     /**
-     * 执行模型预测
+     * Execute model prediction
      */
     private Map<String, Object> executeModelPrediction(Map<String, Object> features) {
         try {
-            // 准备输入字段
+            // Prepare input fields
             Map<FieldName, Object> arguments = new LinkedHashMap<>();
             for (InputField inputField : evaluator.getActiveFields()) {
                 FieldName fieldName = inputField.getName();
@@ -305,10 +305,10 @@ public class JavaMLModelServiceImpl implements MLModelService {
                 arguments.put(fieldName, preparedValue);
             }
             
-            // 执行预测
+            // Execute prediction
             Map<FieldName, ?> results = evaluator.evaluate(arguments);
             
-            // 处理预测结果
+            // Process prediction results
             List<TargetField> targetFields = evaluator.getTargetFields();
             Map<String, Object> predictions = new HashMap<>();
             
@@ -320,25 +320,25 @@ public class JavaMLModelServiceImpl implements MLModelService {
             
             return predictions;
         } catch (Exception e) {
-            logger.error("模型预测失败", e);
-            throw new RuntimeException("模型预测失败: " + e.getMessage());
+            logger.error("Model prediction failed", e);
+            throw new RuntimeException("Model prediction failed: " + e.getMessage());
         }
     }
     
     /**
-     * 准备模型输入特征
+     * Prepare model input features
      */
     private Map<String, Object> prepareFeatures(String productId, String sellerId, Double unitPrice, 
                                               List<Double> historicalSales, LocalDate predictionDate) {
         Map<String, Object> features = new HashMap<>();
         
-        // 处理产品ID和卖家ID的编码
+        // Process product ID and seller ID encodings
         int productIdEnc = productIdEncodings.getOrDefault(productId, 0);
         int sellerIdEnc = sellerIdEncodings.getOrDefault(sellerId, 0);
         
-        // 基本特征
+        // Basic features
         features.put("unit_price", unitPrice);
-        features.put("dayofweek", predictionDate.getDayOfWeek().getValue() % 7); // 0-6, 周日是0
+        features.put("dayofweek", predictionDate.getDayOfWeek().getValue() % 7); // 0-6, Sunday is 0
         features.put("day", predictionDate.getDayOfMonth());
         features.put("week", predictionDate.get(java.time.temporal.WeekFields.ISO.weekOfYear()));
         features.put("month", predictionDate.getMonthValue());
@@ -350,9 +350,9 @@ public class JavaMLModelServiceImpl implements MLModelService {
         features.put("product_id_enc", productIdEnc);
         features.put("seller_id_enc", sellerIdEnc);
         
-        // 滞后特征
+        // Lag features
         int histSize = historicalSales.size();
-        for (int i = 1; i <= 14; i++) {  // 更新为14个滞后特征
+        for (int i = 1; i <= 14; i++) {  // Updated to 14 lag features
             double lagValue = 0.0;
             if (i <= histSize) {
                 lagValue = historicalSales.get(histSize - i);
@@ -360,7 +360,7 @@ public class JavaMLModelServiceImpl implements MLModelService {
             features.put("lag_" + i + "_quantity", lagValue);
         }
         
-        // 移动平均特征
+        // Moving average features
         if (histSize >= 7) {
             List<Double> last7 = historicalSales.subList(histSize - 7, histSize);
             features.put("rolling_mean_7d", last7.stream().mapToDouble(Double::doubleValue).average().orElse(0));
@@ -392,7 +392,7 @@ public class JavaMLModelServiceImpl implements MLModelService {
     }
     
     /**
-     * 计算标准差
+     * Calculate standard deviation
      */
     private double calculateStd(List<Double> values) {
         double mean = values.stream().mapToDouble(Double::doubleValue).average().orElse(0);
@@ -404,27 +404,27 @@ public class JavaMLModelServiceImpl implements MLModelService {
     }
     
     /**
-     * 获取历史销售数据 - 使用实际的订单数据
+     * Get historical sales data - using actual order data
      * 
-     * @param productId 产品ID
-     * @param sellerId 卖家ID
-     * @return 按日期排序的历史销售量列表
+     * @param productId Product ID
+     * @param sellerId Seller ID
+     * @return List of historical sales volumes sorted by date
      */
     private List<Double> getHistoricalSales(String productId, String sellerId) {
-        // 获取所有的历史订单数据，使用一个很早的日期确保获取全部历史数据
-        LocalDateTime longTimeAgo = LocalDateTime.now().minusYears(10); // 10年前
+        // Get all historical order data, using a very early date to ensure getting all history
+        LocalDateTime longTimeAgo = LocalDateTime.now().minusYears(10); // 10 years ago
         List<Order> historicalOrders = orderRepository.findBySellerIdAndProductIdAndTimestampAfter(
                 sellerId, productId, longTimeAgo);
         
         if (historicalOrders == null || historicalOrders.isEmpty()) {
-            logger.warn("未找到产品 {} 的卖家 {} 的历史订单数据", productId, sellerId);
+            logger.warn("No historical order data found for product {} and seller {}", productId, sellerId);
             return new ArrayList<>();
         }
         
-        // 按时间戳排序
+        // Sort by timestamp
         historicalOrders.sort(Comparator.comparing(Order::getTimestamp));
         
-        // 将订单按日期分组并计算每日销售总量
+        // Group orders by date and calculate daily total sales
         Map<LocalDate, Double> dailySales = new HashMap<>();
         
         for (Order order : historicalOrders) {
@@ -432,11 +432,11 @@ public class JavaMLModelServiceImpl implements MLModelService {
             dailySales.merge(orderDate, (double) order.getQuantity(), Double::sum);
         }
         
-        // 填补缺失的日期 - 确保数据连续性
+        // Fill in missing dates - ensure data continuity
         LocalDate firstDate = historicalOrders.get(0).getTimestamp().toLocalDate();
         LocalDate lastDate = historicalOrders.get(historicalOrders.size() - 1).getTimestamp().toLocalDate();
         
-        // 计算整个时间范围内的所有日期
+        // Calculate all dates within the time range
         List<LocalDate> allDates = new ArrayList<>();
         long daysBetween = ChronoUnit.DAYS.between(firstDate, lastDate);
         
@@ -445,19 +445,19 @@ public class JavaMLModelServiceImpl implements MLModelService {
             allDates.add(date);
         }
         
-        // 使用所有日期构建销售数据数组，如果某日没有销售则记为0
+        // Build sales data array using all dates, record 0 for days without sales
         List<Double> salesData = allDates.stream()
                 .map(date -> dailySales.getOrDefault(date, 0.0))
                 .collect(Collectors.toList());
         
-        logger.info("获取到 {} 天的历史销售数据，从 {} 到 {}", 
+        logger.info("Retrieved {} days of historical sales data, from {} to {}", 
                 salesData.size(), firstDate, lastDate);
         
         return salesData;
     }
     
     /**
-     * 生成模拟预测
+     * Generate mock prediction
      */
     private Map<String, Object> generateMockPrediction(String productId, String sellerId, Double unitPrice, Integer weeksAhead) {
         Map<String, Object> prediction = new HashMap<>();
@@ -475,7 +475,7 @@ public class JavaMLModelServiceImpl implements MLModelService {
             weekPrediction.put("week_number", week + 1);
             weekPrediction.put("prediction_date", getDateForWeeksAhead(week));
             
-            // 添加一些随机性但遵循趋势
+            // Add some randomness but follow trend
             double weeklyFactor = 1.0 + (week * 0.05) + (random.nextDouble() * 0.1 - 0.05);
             double predictedSales = baseQuantity * weeklyFactor;
             
@@ -505,7 +505,7 @@ public class JavaMLModelServiceImpl implements MLModelService {
             List<Map<String, Object>> predictions = (List<Map<String, Object>>) prediction.get("predictions");
             return predictions != null ? predictions : new ArrayList<>();
         } catch (ClassCastException e) {
-            logger.error("预测格式无效", e);
+            logger.error("Invalid prediction format", e);
             return new ArrayList<>();
         }
     }

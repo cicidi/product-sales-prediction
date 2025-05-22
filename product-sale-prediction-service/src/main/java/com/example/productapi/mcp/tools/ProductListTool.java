@@ -22,9 +22,10 @@ public class ProductListTool implements Tool {
         
         // Build tool definition - using snake_case
         this.definition = ToolDefinition.builder()
-                .name("get_products")
-                .displayName("Product List Query")
-                .description("Get product list, supporting filtering by category and seller ID")
+                .name("list_products")
+                .displayName("Product List")
+                .description("List products with optional filtering by category and seller ID")
+                .operationId("list_products")
                 .parameters(Arrays.asList(
                     ToolDefinition.ParameterDefinition.builder()
                         .name("category")

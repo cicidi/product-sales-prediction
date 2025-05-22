@@ -29,6 +29,7 @@ public class OrderListTool implements Tool {
                 .name("get_sellers_orders")
                 .displayName("Order List Query")
                 .description("Query order records for a specific seller, supporting time range and pagination")
+                .operationId("list_orders")
                 .parameters(Arrays.asList(
                     ToolDefinition.ParameterDefinition.builder()
                         .name("seller_id")

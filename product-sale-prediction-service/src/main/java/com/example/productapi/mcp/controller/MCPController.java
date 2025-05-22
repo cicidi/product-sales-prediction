@@ -26,7 +26,8 @@ public class MCPController {
 
     @Operation(
         summary = "Get all available tools",
-        description = "Returns information about all tools callable through MCP, including sales analysis tools, sales prediction tools, etc."
+        description = "Returns information about all tools callable through MCP, including sales analysis tools, sales prediction tools, etc.",
+        operationId = "listTools"
     )
     @GetMapping("/tools")
     public ResponseEntity<ToolResponse> listTools() {
@@ -37,7 +38,8 @@ public class MCPController {
 
     @Operation(
         summary = "Get tool details",
-        description = "Returns detailed information about a specific tool by its name, including its parameters and output schema, such as parameters needed for product sales prediction and return value structure"
+        description = "Returns detailed information about a specific tool by its name, including its parameters and output schema, such as parameters needed for product sales prediction and return value structure",
+        operationId = "getToolDetails"
     )
     @GetMapping("/tools/{toolName}")
     public ResponseEntity<ToolResponse> getToolDetails(@PathVariable String toolName) {
@@ -48,7 +50,8 @@ public class MCPController {
 
     @Operation(
         summary = "Execute tool",
-        description = "Invoke a specific tool with provided parameters. For example: call the sales prediction tool to predict future sales of specific products; call the sales analysis tool to get sales rankings"
+        description = "Invoke a specific tool with provided parameters. For example: call the sales prediction tool to predict future sales of specific products; call the sales analysis tool to get sales rankings",
+        operationId = "executeTool"
     )
     @PostMapping("/execute")
     public ResponseEntity<ToolResponse> executeTool(@RequestBody ToolRequest request) {
@@ -67,7 +70,8 @@ public class MCPController {
     
     @Operation(
         summary = "Health check",
-        description = "Verify if MCP service is available and return current service version and number of available tools"
+        description = "Verify if MCP service is available and return current service version and number of available tools",
+        operationId = "getStatus"
     )
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getStatus() {

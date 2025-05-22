@@ -32,6 +32,11 @@ public class ToolDefinition {
     private String description;
     
     /**
+     * Operation ID for OpenAPI/Swagger documentation
+     */
+    private String operationId;
+    
+    /**
      * Parameter definitions
      */
     private List<ParameterDefinition> parameters;
