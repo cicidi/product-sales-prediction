@@ -1,0 +1,110 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: product-predictor-service
+  
+  # H2 Database Configuration
+  datasource:
+    url: jdbc:h2:mem:productdb;DB_CLOSE_DELAY=-1
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+  
+  # H2 Console
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  # Jackson Configuration
+  jackson:
+    serialization:
+      indent_output: true
+  
+  # OpenAI Configuration
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        options:
+          model: text-embedding-ada-002
+    model:
+      embedding: openai
+
+# Logging Configuration
+logging:
+  level:
+    com.example.productapi: INFO
+    org.springframework.web: INFO
+    org.hibernate: ERROR
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+    org.springframework:
+      orm.jpa: ERROR
+      transaction: ERROR
+
+# CSV File Paths
+csv:
+  product-file: final_sample_products.csv
+  sales-file: sales_2023_2025_realistic.csv
+
+# Qdrant Configuration
+qdrant:
+  host: bcdb7803-3764-46a7-9d0e-d115a81f8ed9.europe-west3-0.gcp.cloud.qdrant.io
+  http:
+    port: 6333
+  grpc:
+    port: 6334
+  api-key: ${QDRANT_API_KEY}
+  collection:
+    name: product_embeddings
+  embedding:
+    dimension: 1536
+  use:
+    ssl: true
+
+# OpenAI Configuration
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+  model: text-embedding-ada-002
+
+# AWS SageMaker Configuration
+aws:
+  sagemaker:
+    endpoint-name: sales-predict-endpoint
+  region: us-west-2
+  access-key: AKIASGXFHFEHB6SBIW6H
+  secret-key: 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
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+# ML Model Configuration
+ml:
+  model:
+    base:
+      path: ../product-sale-prediction-AI/train/model
+    use:
+      local:
+        model: true
+    api:
+      endpoint: http://localhost:8000/predict 

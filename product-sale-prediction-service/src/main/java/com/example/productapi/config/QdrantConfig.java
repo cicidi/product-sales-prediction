@@ -8,20 +8,26 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
 
+import io.qdrant.client.QdrantClient;
+import io.qdrant.client.QdrantGrpcClient;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 public class QdrantConfig {
 
-    @Value("${qdrant.host:bcdb7803-3764-46a7-9d0e-d115a81f8ed9.europe-west3-0.gcp.cloud.qdrant.io}")
+    @Value("${qdrant.host}")
     private String qdrantHost;
 
-    @Value("${qdrant.port:6333}")
-    private int qdrantPort;
+    @Value("${qdrant.grpc.port:6334}")
+    private int qdrantGrpcPort;
 
-    @Value("${qdrant.api-key:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.AIQURDWwgjJ3gpl6lZ_ppDz_m6kYK8nan--LVVPubPo}")
+    @Value("${qdrant.http.port:6333}")
+    private int qdrantHttpPort;
+
+    @Value("${qdrant.api-key}")
     private String qdrantApiKey;
 
     @Value("${qdrant.collection.name:product_embeddings}")
@@ -30,11 +36,31 @@ public class QdrantConfig {
     @Value("${qdrant.embedding.dimension:1536}")
     private int embeddingDimension;
 
+    @Value("${qdrant.use.ssl:false}")
+    private boolean useSSL;
+
+    @Bean
+    public QdrantClient qdrantClient() {
+        ManagedChannelBuilder<?> channelBuilder = ManagedChannelBuilder
+            .forAddress(qdrantHost, qdrantGrpcPort);
+            
+        if (!useSSL) {
+            channelBuilder.usePlaintext();
+        }
+
+        ManagedChannel channel = channelBuilder.build();
+
+        return new QdrantClient(
+            QdrantGrpcClient.newBuilder(channel, useSSL)
+                .withApiKey(qdrantApiKey)
+                .build()
+        );
+    }
+
     @Bean
     public RestTemplate qdrantRestTemplate() {
         RestTemplate restTemplate = new RestTemplate();
 
-        // Add API key as interceptor
         ClientHttpRequestInterceptor apiKeyInterceptor = (request, body, execution) -> {
             HttpHeaders headers = request.getHeaders();
             headers.set("api-key", qdrantApiKey);
@@ -49,7 +75,8 @@ public class QdrantConfig {
 
     @Bean
     public String qdrantBaseUrl() {
-        return "https://" + qdrantHost + ":" + qdrantPort;
+        String protocol = useSSL ? "https" : "http";
+        return protocol + "://" + qdrantHost + ":" + qdrantHttpPort;
     }
 
     @Bean

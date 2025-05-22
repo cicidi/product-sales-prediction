@@ -9,84 +9,50 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
-public class ProductService {
+/*
+ * Service interface for product operations
+ */
+public interface ProductService {
 
-    private final ProductRepository productRepository;
-    private final EmbeddingService embeddingService;
-    
-    @Autowired
-    public ProductService(ProductRepository productRepository, EmbeddingService embeddingService) {
-        this.productRepository = productRepository;
-        this.embeddingService = embeddingService;
-    }
-    
     /**
      * Get all products, optionally filtered by category and/or seller ID
      */
-    public List<Product> getAllProducts(String category, String sellerId) {
-        // If no filters provided, return all products
-        if ((category == null || category.trim().isEmpty()) && (sellerId == null || sellerId.trim().isEmpty())) {
-            return productRepository.findAll();
-        }
-        
-        // If only category filter provided
-        if (sellerId == null || sellerId.trim().isEmpty()) {
-            return productRepository.findByCategory(category);
-        }
-        
-        // If only seller ID filter provided
-        if (category == null || category.trim().isEmpty()) {
-            return productRepository.findBySellerId(sellerId);
-        }
-        
-        // Both filters provided
-        return productRepository.findBySellerIdAndCategory(sellerId, category);
-    }
+    List<Product> getAllProducts(String category, String sellerId);
     
     /**
      * Get product by ID
      */
-    public Optional<Product> getProductById(String id) {
-        return productRepository.findById(id);
-    }
+    Optional<Product> getProductById(String id);
     
     /**
      * Find similar products based on product ID or description
      */
-    public List<Product> findSimilarProducts(SimilarProductSearchRequest request) {
-        if (request == null) {
-            return Collections.emptyList();
-        }
-        
-        // Get the embedding to compare against
-        List<Float> queryEmbedding = null;
-        
-        // If product ID is provided, use its embedding
-        if (request.getProductId() != null && !request.getProductId().isEmpty()) {
-            queryEmbedding = embeddingService.getProductEmbedding(request.getProductId());
-        }
-        // Otherwise, generate embedding from the description text
-        else if (request.getDescription() != null && !request.getDescription().isEmpty()) {
-            queryEmbedding = embeddingService.generateEmbedding(request.getDescription());
-        }
-        
-        // If we couldn't get an embedding, return empty list
-        if (queryEmbedding == null) {
-            return Collections.emptyList();
-        }
-        
-        // Find similar products based on embedding
-        List<String> similarProductIds = embeddingService.findSimilarProducts(queryEmbedding, 10);
-        
-        // Retrieve the actual product objects
-        return similarProductIds.stream()
-                .map(productRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-    }
+    List<Product> findSimilarProducts(SimilarProductSearchRequest request);
+
+    /**
+     * 创建新产品
+     * 
+     * @param productData 产品数据字段映射:
+     *                    - name: 产品名称
+     *                    - category: 产品类别
+     *                    - brand: 产品品牌
+     *                    - price: 产品价格
+     *                    - description: 产品描述(可选)
+     *                    - sellerId: 卖家ID
+     * @return 创建的产品
+     */
+    Product createProduct(Map<String, Object> productData);
+    
+    /**
+     * 更新产品
+     * 
+     * @param id 要更新的产品ID
+     * @param productData 需要更新的产品字段映射
+     * @return 更新后的产品，如果产品不存在则返回null
+     */
+    Product updateProduct(String id, Map<String, Object> productData);
 } 

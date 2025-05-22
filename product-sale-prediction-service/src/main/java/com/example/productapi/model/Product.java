@@ -37,4 +37,6 @@ public class Product {
     
     @Transient
     private List<Float> descriptionVector;
+
+    private String sellerId;
 } 

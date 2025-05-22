@@ -113,31 +113,33 @@ components:
 
     SalesSearchRequest:
       type: object
+      required:
+        - topN
+        - startTime
       properties:
         topN:
-          default: 3
           type: integer
+          description: Number of top selling products to return
           example: 10
-          description: Number of top products to retrieve
+          minimum: 1
         startTime:
           type: string
-          default: "2025/01"
-          description: Start time in year/month format
+          description: Start time for search (format yyyy-MM-dd)
+          example: "2024-03-01"
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
         endTime:
           type: string
-          default: "2025/05"
-          description: End time in year/month format
-        sellerId:
-          type: string
-          required: true
-          example: "SELLER789"
-          description: Seller ID to filter by
+          description: End time for search (format yyyy-MM-dd), defaults to current time
+          example: "2024-03-31"
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
         category:
           type: string
-          example: "Electronics"
-          description: Category to filter by
-      required:
-        - sellerId
+          description: Product category to filter results
+          example: "electronics"
+        sellerId:
+          type: string
+          description: Seller ID to filter sales (optional)
+          example: "seller123"
 
     SalesPredictionRequest:
       type: object
@@ -162,6 +164,33 @@ components:
         - productId
         - sellerId
 
+    TopSellingProductResponse:
+      type: object
+      properties:
+        productId:
+          type: string
+          example: "P123456"
+        name:
+          type: string
+          example: "Wireless Headphones"
+        category:
+          type: string
+          example: "Electronics"
+        brand:
+          type: string
+          example: "Sony"
+        price:
+          type: number
+          format: double
+          example: 99.99
+        totalQuantity:
+          type: integer
+          format: int64
+          example: 150
+        totalRevenue:
+          type: number
+          format: double
+          example: 14998.50
 
 paths:
   /v1/products:
@@ -287,17 +316,40 @@ paths:
     get:
       tags:
         - Orders
-      summary: Get recent orders
-      description: Retrieve particular seller's recent orders with pagination support (max 100 items per page)
-      operationId: getRecentOrders
+      summary: Get orders with filters
+      description: Retrieve orders with optional filters for seller ID, category, date range. Default returns last 30 days orders.
+      operationId: getOrders
       parameters:
         - name: sellerId
           in: query
-          description: Seller ID (required to filter orders by seller)
-          required: true
+          description: Seller ID to filter orders by
+          required: false
           schema:
             type: string
           example: "SELLER789"
+        - name: category
+          in: query
+          description: Category to filter orders by
+          required: false
+          schema:
+            type: string
+          example: "Electronics"
+        - name: startTime
+          in: query
+          description: Start time (ISO format, e.g. 2024-03-21T00:00:00)
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: "2024-03-21T00:00:00"
+        - name: endTime
+          in: query
+          description: End time (ISO format, e.g. 2024-03-21T23:59:59). Defaults to current time if not provided
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: "2024-03-21T23:59:59"
         - name: page
           in: query
           description: Page number (0-based)
@@ -336,34 +388,64 @@ paths:
                   totalPages:
                     type: integer
                     example: 13
-        '400':
-          description: Bad request - sellerId is missing
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
+                  sellerId:
                     type: string
-                    example: "sellerId parameter is required"
+                    example: "SELLER789"
+                  category:
+                    type: string
+                    example: "Electronics"
+                  startTime:
+                    type: string
+                    format: date-time
+                    example: "2024-03-21T00:00:00"
+                  endTime:
+                    type: string
+                    format: date-time
+                    example: "2024-03-21T23:59:59"
 
   /v1/sales/analytics:
     post:
       tags:
         - Analytics
       summary: Search for top selling products
-      description: Returns a list of topN-selling products. Supports optional query parameters for filtering by time period, product category, and seller ID.
+      description: Returns a list of top-selling products. Supports filtering by time period, product category, and seller ID.
       operationId: searchTopSellingProducts
       requestBody:
-        description: Search parameters
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SalesSearchRequest'
+              type: object
+              required:
+                - topN
+                - startTime
+              properties:
+                topN:
+                  type: integer
+                  description: Number of top selling products to return
+                  example: 10
+                  minimum: 1
+                startTime:
+                  type: string
+                  description: Start time for search (format yyyy-MM-dd)
+                  example: "2024-03-01"
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                endTime:
+                  type: string
+                  description: End time for search (format yyyy-MM-dd), defaults to current time
+                  example: "2024-03-31"
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                category:
+                  type: string
+                  description: Product category to filter results
+                  example: "electronics"
+                sellerId:
+                  type: string
+                  description: Seller ID to filter sales (optional)
+                  example: "seller123"
       responses:
         '200':
-          description: Search results
+          description: Successfully retrieved top selling products
           content:
             application/json:
               schema:
@@ -372,34 +454,23 @@ paths:
                   products:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        productId:
-                          type: string
-                          example: "P123456"
-                        totalQuantity:
-                          type: integer
-                          example: 250
-                        name:
-                          type: string
-                          example: "Wireless Bluetooth Headphones"
-                        category:
-                          type: string
-                          example: "Electronics"
-                        brand:
-                          type: string
-                          example: "AudioTech"
-                        price:
-                          type: number
-                          format: double
-                          example: 99.99
+                      $ref: '#/components/schemas/TopSellingProductResponse'
                   count:
                     type: integer
+                    description: Number of products returned
                     example: 10
                   query:
                     $ref: '#/components/schemas/SalesSearchRequest'
         '400':
-          description: Bad request due to invalid parameters
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "startTime parameter is required"
 
   /v1/sales/predict:
     post:

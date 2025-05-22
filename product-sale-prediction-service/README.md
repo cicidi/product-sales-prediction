@@ -7,7 +7,7 @@ An intelligent e-commerce prediction system built with Spring Boot, designed to 
 - Product management with vector similarity search
 - Order history tracking
 - Sales analytics and top product identification
-- Sales prediction with AWS SageMaker integration
+- Sales prediction using ML models with both Java native and Python integration
 - LLM-friendly API endpoints through MCP
 
 ## Technology Stack
@@ -18,6 +18,7 @@ An intelligent e-commerce prediction system built with Spring Boot, designed to 
 - H2 Database (in-memory)
 - Qdrant Vector Database for semantic search
 - OpenAPI / Swagger documentation
+- JPMML for native Java ML model integration
 - AWS SageMaker integration
 
 ## Getting Started
@@ -119,6 +120,61 @@ qdrant.port=6333
 qdrant.api-key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.AIQURDWwgjJ3gpl6lZ_ppDz_m6kYK8nan--LVVPubPo
 qdrant.collection.name=product_embeddings
 qdrant.embedding.dimension=1536
+```
+
+## Sales Prediction ML Model Integration
+
+The application can predict product sales through two methods:
+
+### 1. Java Native Integration (Recommended)
+
+The service supports direct loading of ML models in PMML format for in-JVM prediction:
+
+1. Convert the XGBoost model to PMML format:
+```bash
+chmod +x src/main/resources/scripts/convert_model.sh
+./src/main/resources/scripts/convert_model.sh
+```
+
+2. The model will be loaded automatically when the Spring Boot application starts.
+
+3. Use the endpoint to make predictions:
+```
+POST /v1/sales/predict-ml
+```
+
+### 2. Python Server Integration (Alternative)
+
+Alternatively, you can run the Python Flask server alongside the Java application:
+
+1. Start the Python prediction server:
+```bash
+chmod +x src/main/resources/scripts/run_model_server.sh
+./src/main/resources/scripts/run_model_server.sh
+```
+
+2. The Spring Boot application will call the Python API endpoint for predictions.
+
+## Configuration
+
+Key configuration in `application.properties`:
+
+- `server.port`: Application port
+- `csv.product-file`: Path to product CSV file
+- `csv.sales-file`: Path to sales CSV file
+- Qdrant Vector Database settings
+- AWS SageMaker settings
+- OpenAI API settings (for embeddings)
+
+### ML Model Configuration
+
+```properties
+# Path to the ML model directory
+ml.model.base.path=../product-sale-prediction-AI/train/model
+# Whether to use the local model or mock predictions
+ml.model.use.local.model=true
+# API endpoint for the Python model server
+ml.model.api.endpoint=http://localhost:8000/predict
 ```
 
 ## MCP Integration for LLM Agents
