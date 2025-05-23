@@ -1,0 +1,54 @@
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding-top: 1rem;
+}
+
+.chat-row {
+    display: flex;
+    align-items: flex-start;
+}
+
+.avatar {
+    font-size: 1.5rem;
+    margin: 2px 0.6rem 0 0.6rem;
+}
+
+.message-block {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+}
+
+.message {
+    padding: 0.8rem 1.2rem;
+    border-radius: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: "Segoe UI", "Noto Sans", sans-serif;
+}
+
+.user-message {
+    align-self: flex-end;
+    background-color: #D5D4D4;  /* 浅灰色 ChatGPT 风格 */
+    color: #000;
+    border-bottom-right-radius: 0.3rem;
+}
+
+.bot-message {
+    align-self: flex-start;
+    background-color: transparent;  /* 透明背景 */
+    color: #ffffff;
+    border-bottom-left-radius: 0.3rem;
+}
+
+.timestamp {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.3rem;
+    margin-left: 0.5rem;
+}

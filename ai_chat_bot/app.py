@@ -1,41 +1,81 @@
+
 import os
 import uuid
-
+from datetime import datetime
 import streamlit as st
 from dotenv import load_dotenv
-
 from agent_initializer import build_agent
+import base64
+
 
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
-st.set_page_config(page_title="AI sale assistant", layout="wide")
-st.title("AI Chatbot")
+st.set_page_config(page_title="AI Sale Assistant", layout="wide")
+# st.title("Intuit AI Chatbot")
 
-# Initialize session state for user ID
+# Load custom chat CSS
+with open("chat_styles.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# Initialize session state
 if "user_id" not in st.session_state:
     st.session_state.user_id = str(uuid.uuid4())
     st.sidebar.info(f"Session ID: {st.session_state.user_id}")
 
-# Initialize chat history in session state
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Initialize agent with session ID
 if "agent" not in st.session_state:
     st.session_state.agent = build_agent(
         "http://localhost:8080/api/mcp/tools",
         session_id=st.session_state.user_id
     )
 
-# Display the chat history in the UI
-for item in st.session_state.chat_history:
-    with st.chat_message("user"):
-        st.markdown(item["user"])
-    with st.chat_message("assistant"):
-        st.markdown(item["reply"])
+# Display chat history with avatars and timestamps
+st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
-# Display thought log in sidebar if debug mode is enabled
+def image_to_base64(filename):
+    current_dir = os.path.dirname(__file__)
+    path = os.path.join(current_dir, filename)
+    with open(path, "rb") as img_file:
+        encoded = base64.b64encode(img_file.read()).decode()
+        return f"data:image/png;base64,{encoded}"
+logo_base64 = image_to_base64("quickbooks.png")
+st.markdown(
+    f"""
+    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: -1rem;">
+        <img src="{logo_base64}" alt="QuickBooks Logo" width="40" height="40" style="border-radius: 6px;" />
+        <h1 style="margin: 0; font-size: 2rem;">QuickBooks AI Chatbot</h1>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+for item in st.session_state.chat_history:
+    timestamp = item.get("timestamp") or datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    st.markdown(f"""
+<div class='chat-row' style='justify-content: flex-end;'>
+    <div class='message-block'>
+        <div class='message user-message'>{item["user"]}</div>
+        <div class='timestamp' style='text-align: right;'>{timestamp}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown(f"""
+<div class='chat-row' style='justify-content: flex-start;'>
+    <div class='message-block'>
+        <div class='message bot-message'>{item["reply"]}</div>
+        <div class='timestamp'>{timestamp}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Sidebar: agent thought process
 if st.sidebar.checkbox("Show Agent Thought Process", value=False):
     if isinstance(st.session_state.agent, object) and hasattr(st.session_state.agent, 'memory_module'):
         thought_log = st.session_state.agent.memory_module.get_thought_log()
@@ -46,24 +86,36 @@ if st.sidebar.checkbox("Show Agent Thought Process", value=False):
         else:
             st.sidebar.info("No thought logs available yet.")
 
-# Get user input
+# User input
 user_input = st.chat_input("Enter your question, like: what is my last month best sale product？")
 
 if user_input:
-    # Display user message
-    st.chat_message("user").markdown(user_input)
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    st.markdown(f"""
+<div class='chat-row' style='justify-content: flex-end;'>
+    <div class='message-block'>
+        <div class='message user-message'>{user_input}</div>
+        <div class='timestamp' style='text-align: right;'>{timestamp}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
     try:
-        # Process through our enhanced agent
         reply = st.session_state.agent.run(user_input)
     except Exception as e:
-        reply = f"出错了：{str(e)}"
+        reply = f"error: {str(e)}"
 
-    # Display assistant response
-    st.chat_message("assistant").markdown(reply)
+    st.markdown(f"""
+<div class='chat-row' style='justify-content: flex-start;'>
+    <div class='message-block'>
+        <div class='message bot-message'>{reply}</div>
+        <div class='timestamp'>{timestamp}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-    # Add to Streamlit session state for UI display
     st.session_state.chat_history.append({
         "user": user_input,
-        "reply": reply
+        "reply": reply,
+        "timestamp": timestamp
     })
