@@ -95,7 +95,6 @@ public class CSVLoaderServiceImpl implements CSVLoaderService {
                 .price(Double.parseDouble(line[4]))
                 .createTimestamp(LocalDateTime.parse(line[5]))
                 .description(line[6])
-                .sellerId("SELLER789") // 设置默认卖家ID
                 .build();
 
             products.add(product);

@@ -121,7 +121,6 @@ public class ProductServiceImpl implements ProductService {
                 .category(productData.get("category").toString())
                 .brand(productData.get("brand").toString())
                 .price(Double.parseDouble(productData.get("price").toString()))
-                .sellerId(productData.get("sellerId").toString())
                 .description(productData.getOrDefault("description", "").toString())
                 .createTimestamp(LocalDateTime.now())
                 .build();
@@ -180,10 +179,6 @@ public class ProductServiceImpl implements ProductService {
                 log.error("Error updating embedding for product {}: {}", existingProduct.getId(), e.getMessage());
             }
         }
-        if (productData.containsKey("sellerId")) {
-            existingProduct.setSellerId(productData.get("sellerId").toString());
-        }
-
         // Save and return updated product
         return productRepository.save(existingProduct);
     }
