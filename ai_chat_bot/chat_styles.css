@@ -1,54 +1,78 @@
-
+/* Chat container styles */
 .chat-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    padding-top: 1rem;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
+/* Message row styles */
 .chat-row {
     display: flex;
-    align-items: flex-start;
+    margin-bottom: 10px;
+    width: 100%;
 }
 
-.avatar {
-    font-size: 1.5rem;
-    margin: 2px 0.6rem 0 0.6rem;
-}
-
+/* Message block styles */
 .message-block {
-    display: flex;
-    flex-direction: column;
-    max-width: 75%;
+    max-width: 80%;
 }
 
-.message {
-    padding: 0.8rem 1.2rem;
-    border-radius: 1rem;
-    font-size: 1rem;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-    font-family: "Segoe UI", "Noto Sans", sans-serif;
-}
-
+/* User message styles */
 .user-message {
-    align-self: flex-end;
-    background-color: #D5D4D4;  /* 浅灰色 ChatGPT 风格 */
-    color: #000;
-    border-bottom-right-radius: 0.3rem;
+    background-color: #0078d4;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 15px 15px 0 15px;
+    margin: 5px 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Bot message styles */
 .bot-message {
-    align-self: flex-start;
-    background-color: transparent;  /* 透明背景 */
-    color: #ffffff;
-    border-bottom-left-radius: 0.3rem;
+    background-color: #f2f2f2;
+    color: #333;
+    padding: 10px 15px;
+    border-radius: 15px 15px 15px 0;
+    margin: 5px 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Timestamp styles */
 .timestamp {
-    font-size: 0.75rem;
+    font-size: 12px;
     color: #888;
-    margin-top: 0.3rem;
-    margin-left: 0.5rem;
+    margin-top: 3px;
+}
+
+/* Typing animation styles */
+.typing-animation {
+    display: inline-block;
+    overflow: hidden;
+    white-space: pre-wrap;
+    animation: typing-effect 20ms steps(1);
+    border-right: 0;
+}
+
+/* Cursor animation */
+.cursor {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    background-color: #333;
+    margin-left: 2px;
+    animation: cursor-blink 0.8s infinite;
+}
+
+/* Typing animation */
+@keyframes typing-effect {
+    from { max-width: 0; }
+    to { max-width: 100%; }
+}
+
+/* Cursor blink animation */
+@keyframes cursor-blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
 }
