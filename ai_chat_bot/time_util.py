@@ -40,21 +40,29 @@ def parse_natural_time(expression: str):
     else:
       # fallback：使用 LLM 推理时间范围
       prompt = f"""
-You are a time range parser.
+You are a strict JSON formatter.
 
-Convert the user's natural language time expression — "{expression}" — into a JSON object with two keys: "start_date" and "end_date". 
-Now it is {now.strftime('%Y-%m-%d')}.
-if start time not mentioned, use 3 month before now as start time, 
-if end time not mentioned, use the current date as the end date.
-The format must be json format, not other format like markdown or characters:
+Convert the user's natural language time expression — "{expression}" — into a JSON object with exactly two keys: "start_date" and "end_date".
+
+Today's date is {now.strftime('%Y-%m-%d')}.  
+If the start time is not mentioned, default to 3 months before today.  
+If the end time is not mentioned, default to today's date.
+
+Important formatting rules:
+- The output MUST be a plain JSON object.
+- DO NOT use markdown formatting (no ```json or ```).
+- DO NOT include any explanatory text, headers, or surrounding characters.
+
+The output format must be:
 
 {{
   "start_date": "YYYY/MM/DD",
   "end_date": "YYYY/MM/DD"
 }}
 
-Only return the JSON object.
+Return only the raw JSON. Nothing else.
 """
+
       response = llm.predict(prompt)
       try:
         json_result = json.loads(response)

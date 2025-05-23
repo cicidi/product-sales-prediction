@@ -79,3 +79,5 @@ venv.bak/
 _backup/
 *.sqlite
 *.db
+#application log
+session_*_history.json
