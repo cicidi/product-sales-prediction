@@ -75,10 +75,10 @@ Derived features from `create_timestamp`:
 
 | Feature             | Effect on Quantity                               |
 |---------------------|--------------------------------------------------|
-| `sale_price` vs `original_price` | Greater discount → higher quantity        |
+| `sale_price` vs `original_price` | Greater discount → higher quantity (up to 20% discount) |
 | `is_holiday`        | Boosts electronics and clothes sales             |
-| `is_weekend`        | Boosts food sales                                |
-| `product_id`         | Different base rates, all balanced               |
+| `is_weekend`        | Boosts food sales significantly                  |
+| `product_id`        | Different base rates, all balanced               |
 | `seller_id`         | Large sellers have slightly higher volume        |
 | `day_of_week`       | Captures weekday/weekend patterns                |
 | `day_of_month` / `month` | Reflect seasonal/monthly variations        |
@@ -124,3 +124,4 @@ No single feature (especially `product_id`) should account for >50% of model imp
 - Train regression model (e.g. XGBoost)
 - Use feature importance analysis to validate distribution
 - Add lag features, product age, or demand windows as next iteration
+

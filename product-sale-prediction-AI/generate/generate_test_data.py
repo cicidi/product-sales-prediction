@@ -24,19 +24,19 @@ class SalesDataGenerator:
         self.end_date = datetime(2025, 5, 24)
         self.total_orders = 100000
         
-        # Product data
+        # Product data (matching final_sample_products.csv)
         self.products = [
-            {"id": "p101", "name": "iPhone 15", "category": "Electronics", "brand": "Apple", "price": 999.00},
-            {"id": "p102", "name": "Galaxy S24", "category": "Electronics", "brand": "Samsung", "price": 899.00},
-            {"id": "p103", "name": "Pixel 8", "category": "Electronics", "brand": "Google", "price": 699.00},
-            {"id": "p201", "name": "Nike Air Max", "category": "Clothes", "brand": "Nike", "price": 120.00},
-            {"id": "p202", "name": "Uniqlo Jacket", "category": "Clothes", "brand": "Uniqlo", "price": 80.00},
-            {"id": "p203", "name": "Adidas T-shirt", "category": "Clothes", "brand": "Adidas", "price": 35.00},
-            {"id": "p301", "name": "Almond Butter", "category": "Food", "brand": "Generic", "price": 12.00},
-            {"id": "p302", "name": "Dark Chocolate", "category": "Food", "brand": "Lindt", "price": 8.50},
-            {"id": "p303", "name": "Roasted Almonds", "category": "Food", "brand": "Blue Diamond", "price": 6.00},
-            {"id": "p304", "name": "Organic Honey", "category": "Food", "brand": "Nature's Way", "price": 15.00},
-            {"id": "p305", "name": "Green Tea", "category": "Food", "brand": "Lipton", "price": 4.50}
+            {"id": "p100", "name": "Apple iPhone 14 128GB", "category": "electronics", "brand": "Apple", "price": 799.0},
+            {"id": "p101", "name": "Apple iPhone 15 Pro 256GB", "category": "electronics", "brand": "Apple", "price": 1099.0},
+            {"id": "p102", "name": "Apple iPhone 16 Pro Max 512GB", "category": "electronics", "brand": "Apple", "price": 1299.0},
+            {"id": "p200", "name": "Samsung Galaxy S24 Ultra", "category": "electronics", "brand": "Samsung", "price": 1099.99},
+            {"id": "p201", "name": "Google Pixel 8 Pro", "category": "electronics", "brand": "Google", "price": 999.99},
+            {"id": "p300", "name": "Nike Air Zoom Pegasus 40", "category": "clothes", "brand": "Nike", "price": 130.0},
+            {"id": "p301", "name": "Uniqlo Ultra Light Down Jacket", "category": "clothes", "brand": "Uniqlo", "price": 79.9},
+            {"id": "p302", "name": "Adidas 3-Stripes T-Shirt", "category": "clothes", "brand": "Adidas", "price": 25.0},
+            {"id": "p400", "name": "Kirkland Organic Almond Butter", "category": "food", "brand": "Kirkland", "price": 12.99},
+            {"id": "p401", "name": "Blue Diamond Whole Natural Almonds", "category": "food", "brand": "Blue Diamond", "price": 10.49},
+            {"id": "p402", "name": "Lindt Swiss Chocolate Assorted", "category": "food", "brand": "Lindt", "price": 15.99}
         ]
         
         # Seller data
@@ -113,25 +113,37 @@ class SalesDataGenerator:
         return date.weekday() >= 5  # 5=Saturday, 6=Sunday
     
     def _calculate_discount_factor(self, product_id: str, date: datetime) -> float:
-        """Calculate discount factor (between 0.7-1.0)"""
-        base_discount = 0.85
+        """Calculate discount factor (between 0.80-1.0, max 20% discount)"""
+        base_discount = 1.0  # Start with no discount
         
-        # Holiday discount
+        # Large holiday discount (max 20%)
         if self._is_holiday(date):
-            base_discount -= 0.1
+            base_discount -= random.uniform(0.10, 0.20)  # 10-20% holiday discount
         
-        # Weekend food discount
-        if self._is_weekend(date) and any(p["id"] == product_id and p["category"] == "Food" for p in self.products):
-            base_discount -= 0.05
+        # Weekend discount (max 20%)
+        elif self._is_weekend(date):
+            if any(p["id"] == product_id and p["category"] == "food" for p in self.products):
+                base_discount -= random.uniform(0.08, 0.20)  # Food weekend discount 8-20%
+            else:
+                base_discount -= random.uniform(0.05, 0.15)  # Other categories weekend discount 5-15%
         
-        # End-of-month clearance
+        # Regular weekday discounts (smaller, optional)
+        else:
+            # 70% chance of having some discount on weekdays
+            if random.random() < 0.7:
+                base_discount -= random.uniform(0.02, 0.10)  # Small weekday discount 2-10%
+            # 30% chance of no discount at all
+        
+        # End-of-month clearance (additional discount)
         if date.day >= 25:
-            base_discount -= 0.05
+            base_discount -= random.uniform(0.02, 0.08)  # 2-8% additional end-of-month discount
         
-        # Add random fluctuation
-        base_discount += random.uniform(-0.1, 0.1)
+        # Add small random fluctuation (±3%)
+        base_discount += random.uniform(-0.03, 0.03)
         
-        return max(0.7, min(1.0, base_discount))
+        # Ensure discount never exceeds 20% (minimum price factor is 0.80)
+        # Some products may have no discount at all (price factor = 1.0)
+        return max(0.80, min(1.0, base_discount))
     
     def _calculate_quantity(self, product_id: str, seller_id: str, unit_price: float, 
                           original_price: float, date: datetime) -> int:
@@ -141,16 +153,16 @@ class SalesDataGenerator:
         product = next(p for p in self.products if p["id"] == product_id)
         category = product["category"]
         
-        if category == "Electronics":
+        if category == "electronics":
             base_qty = 1.5
-        elif category == "Clothes":
+        elif category == "clothes":
             base_qty = 2.0
-        else:  # Food
+        else:  # food
             base_qty = 3.0
         
-        # Price influence (moderate price effect)
+        # Price influence (adjust for smaller discounts)
         discount_ratio = (original_price - unit_price) / original_price
-        price_multiplier = 1.0 + (discount_ratio * 1.5)  # Reduce price impact
+        price_multiplier = 1.0 + (discount_ratio * 3.0)  # Increase sensitivity since discounts are smaller
         
         # Seller influence (reduced seller effect)
         seller_multiplier = 1.15 if seller_id == "seller_1" else 1.0  # Reduce to 15%
@@ -159,16 +171,16 @@ class SalesDataGenerator:
         time_multiplier = 1.0
         
         # Holiday promotions (reduced holiday impact)
-        if self._is_holiday(date) and category in ["Electronics", "Clothes"]:
+        if self._is_holiday(date) and category in ["electronics", "clothes"]:
             time_multiplier *= 1.15  # Reduce to 15% impact
         
         # Weekend effect (more realistic weekend effect)
         if self._is_weekend(date):
-            if category == "Food":
+            if category == "food":
                 time_multiplier *= 1.08  # Food weekend increase 8%
-            elif category == "Electronics":
+            elif category == "electronics":
                 time_multiplier *= 1.05  # Electronics weekend increase 5%
-            else:  # Clothes
+            else:  # clothes
                 time_multiplier *= 1.03  # Clothes weekend increase 3%
         
         # Beginning-of-month payday effect (reduced month-start effect)
@@ -177,11 +189,11 @@ class SalesDataGenerator:
         
         # Seasonal influence (reduced seasonal effect)
         month = date.month
-        if category == "Clothes":
+        if category == "clothes":
             # Seasonal clothing sales increase
             if month in [3, 4, 9, 10]:  # Spring/Fall season change
                 time_multiplier *= 1.10  # Reduce to 10% impact
-        elif category == "Electronics":
+        elif category == "electronics":
             # Year-end electronics sales increase
             if month in [11, 12]:
                 time_multiplier *= 1.15  # Reduce to 15% impact
@@ -196,11 +208,11 @@ class SalesDataGenerator:
         qty = np.random.poisson(max(1, final_qty))
         
         # Ensure balanced quantities across different products
-        if category == "Electronics":
+        if category == "electronics":
             qty = min(qty, 5)  # Electronics limited to lower quantities
-        elif category == "Clothes":
+        elif category == "clothes":
             qty = min(qty, 8)  # Clothes medium quantities
-        else:  # Food
+        else:  # food
             qty = min(qty, 15)  # Food can have higher quantities
         
         return max(1, qty)
@@ -282,7 +294,7 @@ class SalesDataGenerator:
                 'category': product['category'],
                 'brand': product['brand'],
                 'price': product['price'],
-                'createTimeStamp': timestamp_str,
+                'create_timestamp': timestamp_str,
                 'description': f"High-quality {product['name']} from {product['brand']}"
             }
             

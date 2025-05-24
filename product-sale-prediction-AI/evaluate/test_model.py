@@ -1,19 +1,20 @@
 import joblib
 import pandas as pd
 
-def test_sales_model_with_correct_actual():
+
+def test_sales_model_with_random_sample():
   # 加载模型
   model = joblib.load("model/xgb_sales_predictor.pkl")
   print("✅ Model loaded successfully.")
 
-  # 加载聚合后的数据
-  data = pd.read_csv("data/prepared_daily_sales.csv", parse_dates=["create_timestamp"])
-  data["create_date"] = data["create_timestamp"].dt.date
+  # 加载数据
+  data = pd.read_csv("data/prepared_daily_sales.csv", parse_dates=["date"])
+  data["create_date"] = data["date"].dt.date
 
-  # 随机选取一个样本
-  sample = data.sample(n=1000, random_state=42).iloc[0]
+  # ✅ 每次随机选一个样本（不固定）
+  sample = data.sample(n=1).iloc[0]
 
-  # 构造模型输入
+  # 构造特征
   test_sample = pd.DataFrame([{
     "product_id": sample["product_id"],
     "seller_id": sample["seller_id"],
@@ -32,20 +33,15 @@ def test_sales_model_with_correct_actual():
   # 模型预测
   predicted_quantity = model.predict(test_sample)[0]
 
-  # 真实值：该 seller + product 在该日的实际销量
-  sample_date = sample["create_date"]
-  sample_seller = sample["seller_id"]
-  sample_product = sample["product_id"]
-
+  # 真实值
   actual_quantity = data[
-    (data["create_date"] == sample_date) &
-    (data["seller_id"] == sample_seller) &
-    (data["product_id"] == sample_product)
+    (data["create_date"] == sample["create_date"]) &
+    (data["seller_id"] == sample["seller_id"]) &
+    (data["product_id"] == sample["product_id"])
     ]["quantity"].sum()
 
-  # 输出结果
-  print("📆 Sample date:", sample_date)
-  print("🛒 Seller/Product:", sample_seller, sample_product)
+  print("📆 Sample date:", sample["create_date"])
+  print("🛒 Seller/Product:", sample["seller_id"], sample["product_id"])
   print(f"📈 Predicted quantity: {predicted_quantity:.2f}")
   print(f"📉 Actual quantity: {actual_quantity:.2f}")
 
@@ -53,5 +49,6 @@ def test_sales_model_with_correct_actual():
     percent_error = abs(predicted_quantity - actual_quantity) / actual_quantity * 100
     print(f"📉 % Error vs actual: {percent_error:.2f}%")
 
+
 if __name__ == "__main__":
-  test_sales_model_with_correct_actual()
+  test_sales_model_with_random_sample()

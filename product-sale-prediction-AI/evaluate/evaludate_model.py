@@ -9,8 +9,8 @@ def evaluate_sales_model(n_samples=100):
   print("✅ Model loaded successfully.")
 
   # 加载数据
-  data = pd.read_csv("../data/prepared_daily_sales.csv", parse_dates=["create_timestamp"])
-  data["create_date"] = data["create_timestamp"].dt.date
+  data = pd.read_csv("../data/prepared_daily_sales.csv", parse_dates=["date"])
+  data["create_date"] = data["date"].dt.date
 
   # 筛掉含缺失值的数据（保险）
   data = data.dropna().reset_index(drop=True)

@@ -10,7 +10,10 @@ from sklearn2pmml import PMMLPipeline, sklearn2pmml
 
 def train_daily_sales_model():
   # Load original data
-  data = pd.read_csv("./data/prepared_daily_sales.csv", parse_dates=["create_timestamp"])
+  data = pd.read_csv("./data/prepared_daily_sales.csv", parse_dates=["date"])
+  
+  # Rename date column to match expected column name
+  data = data.rename(columns={"date": "create_timestamp"})
 
   # Round to daily granularity
   data["create_timestamp"] = data["create_timestamp"].dt.date  # 保留日期部分
