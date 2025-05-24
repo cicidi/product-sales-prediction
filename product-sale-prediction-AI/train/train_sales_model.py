@@ -1,52 +1,44 @@
 import pandas as pd
-import numpy as np
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn2pmml import sklearn2pmml, PMMLPipeline
+import os
 from xgboost import XGBRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn2pmml import sklearn2pmml, PMMLPipeline
 
-from train.prepare_sales_train_data import prepare_data
-
-
-def train_model():
+def train_model_with_categorical():
   # === Load prepared data ===
-  data = pd.read_csv("./data/prepared_daily_sales.csv",
-                     parse_dates=["create_timestamp"])
+  data = pd.read_csv("./data/prepared_daily_sales.csv", parse_dates=["create_timestamp"])
 
-  # === Define input features and target column ===
-  features = [
+  # === Define feature columns ===
+  categorical_features = ["product_id", "seller_id"]
+  numeric_features = [
     "sale_price", "original_price", "is_holiday", "is_weekend",
     "day_of_week", "day_of_month", "month",
     "lag_1", "lag_7", "lag_30"
   ]
+  all_features = categorical_features + numeric_features
   target = "quantity"
 
-  X = data[features]
+  X = data[all_features]
   y = data[target]
 
-  # === Define PMML-compatible pipeline ===
-  # Step 1: Scale features using StandardScaler
-  # Step 2: Train an XGBoost regressor
-  pipeline = PMMLPipeline([
-    ("scaler", StandardScaler()),
-    ("regressor",
-     XGBRegressor(n_estimators=100, max_depth=6, learning_rate=0.1))
+  # === Build preprocessing pipeline ===
+  preprocessor = ColumnTransformer([
+    ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_features),
+    ("num", "passthrough", numeric_features)
   ])
 
-  # === Train model ===
+  pipeline = PMMLPipeline([
+    ("preprocessor", preprocessor),
+    ("regressor", XGBRegressor(n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42))
+  ])
+
   pipeline.fit(X, y)
 
-  # === Export to PMML format ===
-  # This PMML file can be used in Java with JPMML
-  sklearn2pmml(pipeline, "./model/xgb_sales_predictor.pmml", with_repr=True)
-  print("PMML model saved to model/xgb_sales_predictor.pmml")
-
-def main():
-  prepare_data()
-  train_model()
-
+  os.makedirs("model", exist_ok=True)
+  sklearn2pmml(pipeline, "model/xgb_sales_predictor.pmml", with_repr=True)
+  print("✅ PMML model saved to model/xgb_sales_predictor.pmml")
 
 if __name__ == "__main__":
-  main()
-
-
+  train_model_with_categorical()
