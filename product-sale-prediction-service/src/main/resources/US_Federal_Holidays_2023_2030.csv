@@ -1,0 +1,89 @@
+id,day_of_week,date,holiday_name
+0,0,2023/01/02,New Year's Day
+1,0,2023/01/16,Martin Luther King Jr. Day
+2,0,2023/02/20,Washington’s Birthday
+3,0,2023/05/29,Memorial Day
+4,0,2023/06/19,Juneteenth
+5,1,2023/07/04,Independence Day
+6,0,2023/09/04,Labor Day
+7,0,2023/10/09,Columbus Day
+8,4,2023/11/10,Veterans Day
+9,3,2023/11/23,Thanksgiving Day
+10,0,2023/12/25,Christmas Day
+11,0,2024/01/01,New Year's Day
+12,0,2024/01/15,Martin Luther King Jr. Day
+13,0,2024/02/19,Washington’s Birthday
+14,0,2024/05/27,Memorial Day
+15,2,2024/06/19,Juneteenth
+16,3,2024/07/04,Independence Day
+17,0,2024/09/02,Labor Day
+18,0,2024/10/14,Columbus Day
+19,0,2024/11/11,Veterans Day
+20,3,2024/11/28,Thanksgiving Day
+21,2,2024/12/25,Christmas Day
+22,2,2025/01/01,New Year's Day
+23,0,2025/01/20,Martin Luther King Jr. Day
+24,0,2025/02/17,Washington’s Birthday
+25,0,2025/05/26,Memorial Day
+26,3,2025/06/19,Juneteenth
+27,4,2025/07/04,Independence Day
+28,0,2025/09/01,Labor Day
+29,0,2025/10/13,Columbus Day
+30,1,2025/11/11,Veterans Day
+31,3,2025/11/27,Thanksgiving Day
+32,3,2025/12/25,Christmas Day
+33,3,2026/01/01,New Year's Day
+34,0,2026/01/19,Martin Luther King Jr. Day
+35,0,2026/02/16,Washington’s Birthday
+36,0,2026/05/25,Memorial Day
+37,4,2026/06/19,Juneteenth
+38,4,2026/07/03,Independence Day
+39,0,2026/09/07,Labor Day
+40,0,2026/10/12,Columbus Day
+41,2,2026/11/11,Veterans Day
+42,3,2026/11/26,Thanksgiving Day
+43,4,2026/12/25,Christmas Day
+44,4,2027/01/01,New Year's Day
+45,0,2027/01/18,Martin Luther King Jr. Day
+46,0,2027/02/15,Washington’s Birthday
+47,0,2027/05/31,Memorial Day
+48,4,2027/06/18,Juneteenth
+49,0,2027/07/05,Independence Day
+50,0,2027/09/06,Labor Day
+51,0,2027/10/11,Columbus Day
+52,3,2027/11/11,Veterans Day
+53,3,2027/11/25,Thanksgiving Day
+54,4,2027/12/24,Christmas Day
+55,4,2027/12/31,New Year's Day
+56,0,2028/01/17,Martin Luther King Jr. Day
+57,0,2028/02/21,Washington’s Birthday
+58,0,2028/05/29,Memorial Day
+59,0,2028/06/19,Juneteenth
+60,1,2028/07/04,Independence Day
+61,0,2028/09/04,Labor Day
+62,0,2028/10/09,Columbus Day
+63,4,2028/11/10,Veterans Day
+64,3,2028/11/23,Thanksgiving Day
+65,0,2028/12/25,Christmas Day
+66,0,2029/01/01,New Year's Day
+67,0,2029/01/15,Martin Luther King Jr. Day
+68,0,2029/02/19,Washington’s Birthday
+69,0,2029/05/28,Memorial Day
+70,1,2029/06/19,Juneteenth
+71,2,2029/07/04,Independence Day
+72,0,2029/09/03,Labor Day
+73,0,2029/10/08,Columbus Day
+74,0,2029/11/12,Veterans Day
+75,3,2029/11/22,Thanksgiving Day
+76,1,2029/12/25,Christmas Day
+77,1,2030/01/01,New Year's Day
+78,0,2030/01/21,Martin Luther King Jr. Day
+79,0,2030/02/18,Washington’s Birthday
+80,0,2030/05/27,Memorial Day
+81,2,2030/06/19,Juneteenth
+82,3,2030/07/04,Independence Day
+83,0,2030/09/02,Labor Day
+84,0,2030/10/14,Columbus Day
+85,0,2030/11/11,Veterans Day
+86,3,2030/11/28,Thanksgiving Day
+87,2,2030/12/25,Christmas Day

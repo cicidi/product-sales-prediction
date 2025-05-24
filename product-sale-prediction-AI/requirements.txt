@@ -17,3 +17,6 @@ scikit-learn==1.5.2
 xgboost>=1.6
 sklearn2pmml>=0.92.1
 joblib>=1.2
+pypmml>=0.9.5
+matplotlib>=3.5.0
+seaborn>=0.11.0
