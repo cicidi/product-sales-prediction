@@ -10,7 +10,7 @@ from train.prepare_sales_train_data import prepare_data
 
 def train_model():
   # === Load prepared data ===
-  data = pd.read_csv("train/data/prepared_daily_sales.csv",
+  data = pd.read_csv("./data/prepared_daily_sales.csv",
                      parse_dates=["create_timestamp"])
 
   # === Define input features and target column ===
@@ -38,7 +38,7 @@ def train_model():
 
   # === Export to PMML format ===
   # This PMML file can be used in Java with JPMML
-  sklearn2pmml(pipeline, "train/model/xgb_sales_predictor.pmml", with_repr=True)
+  sklearn2pmml(pipeline, "./model/xgb_sales_predictor.pmml", with_repr=True)
   print("PMML model saved to model/xgb_sales_predictor.pmml")
 
 def main():

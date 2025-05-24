@@ -3,9 +3,9 @@ import pandas as pd
 
 def prepare_data():
   # === file path ===
-  orders_path = "train/data/sales_2023_2025_realistic.csv"
-  products_path = "train/data/final_sample_products.csv"
-  holidays_path = "train/data/US_Federal_Holidays_2023_2030.csv"
+  orders_path = "./data/sales_2023_2025_realistic.csv"
+  products_path = "./data/final_sample_products.csv"
+  holidays_path = "./data/US_Federal_Holidays_2023_2030.csv"
 
   # === load data ===
   orders = pd.read_csv(orders_path, parse_dates=["create_timestamp"])
@@ -62,5 +62,5 @@ def prepare_data():
   daily_sales = daily_sales.fillna(0)
 
   # === save data ===
-  daily_sales.to_csv("train/data/prepared_daily_sales.csv", index=False)
+  daily_sales.to_csv("./data/prepared_daily_sales.csv", index=False)
   print("Data save to prepared_daily_sales.csv")
