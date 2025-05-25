@@ -1,13 +1,14 @@
 package com.example.productapi.controller;
 
 import com.example.productapi.dto.SalesSearchRequest;
-import com.example.productapi.dto.SalesPredictionRequest;
+import com.example.productapi.dto.PredictionRequest;
 import com.example.productapi.dto.TopSellingProductResponse;
 import com.example.productapi.model.Product;
+import com.example.productapi.model.Predications;
 import com.example.productapi.service.OrderService;
 import com.example.productapi.service.ProductService;
 import com.example.productapi.service.SalesAnalyticsService;
-import com.example.productapi.service.SalesPredictionService;
+import com.example.productapi.service.PredictionService;
 import com.example.productapi.util.TimeUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,17 +32,17 @@ public class SalesAnalyticsController {
     private final OrderService orderService;
     private final ProductService productService;
     private final SalesAnalyticsService salesAnalyticsService;
-    private final SalesPredictionService salesPredictionService;
+    private final PredictionService predictionService;
     
     @Autowired
     public SalesAnalyticsController(OrderService orderService,
                           ProductService productService, 
                           SalesAnalyticsService salesAnalyticsService,
-                          SalesPredictionService salesPredictionService) {
+                          PredictionService predictionService) {
         this.orderService = orderService;
         this.productService = productService;
         this.salesAnalyticsService = salesAnalyticsService;
-        this.salesPredictionService = salesPredictionService;
+        this.predictionService = predictionService;
     }
     
     @Operation(
@@ -121,17 +122,11 @@ public class SalesAnalyticsController {
         content = @Content(mediaType = "application/json")
     )
     @PostMapping("/predict")
-    public ResponseEntity<Map<String, Object>> predictProductSales(@RequestBody SalesPredictionRequest request) {
+    public ResponseEntity<?> predictProductSales(@RequestBody PredictionRequest request) {
         // Validate request
         if (request.getProductId() == null || request.getProductId().isEmpty()) {
             return ResponseEntity.badRequest().body(
                 Map.of("error", "productId parameter is required")
-            );
-        }
-        
-        if (request.getStartTime() == null || request.getStartTime().isEmpty()) {
-            return ResponseEntity.badRequest().body(
-                Map.of("error", "startTime parameter is required")
             );
         }
         
@@ -141,44 +136,31 @@ public class SalesAnalyticsController {
             );
         }
         
+        if (request.getStartDate() == null) {
+            return ResponseEntity.badRequest().body(
+                Map.of("error", "startDate parameter is required")
+            );
+        }
+        
         // Get product information
         Optional<Product> productOpt = productService.getProductById(request.getProductId());
         if (productOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Product product = productOpt.get();
-        
-        // Parse times
-        LocalDateTime startTime;
-        LocalDateTime endTime;
-        
-        try {
-            startTime = TimeUtils.parseYearMonth(request.getStartTime());
-            
-            if (request.getEndTime() != null && !request.getEndTime().isEmpty()) {
-                endTime = TimeUtils.parseYearMonth(request.getEndTime());
-                // Move to the end of the month
-                endTime = endTime.plusMonths(1).minusNanos(1);
-            } else {
-                endTime = LocalDateTime.now().plusMonths(3); // Default: predict next 3 months
-            }
-        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
-                Map.of("error", e.getMessage())
+                Map.of("error", "Product not found: " + request.getProductId())
             );
         }
         
         // Make prediction
         try {
-            Map<String, Object> prediction = salesPredictionService.predictProductSales(
-                product, request.getSellerId(), startTime, endTime);
+            Predications predictions = predictionService.predictSales(
+                request.getProductId(), 
+                request.getSellerId(), 
+                request.getSalePrice(),
+                request.getStartDate(), 
+                request.getEndDate()
+            );
             
-            Map<String, Object> response = new HashMap<>();
-            response.put("prediction", prediction);
-            response.put("product", product);
-            response.put("query", request);
-            
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(predictions);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
                 Map.of("error", "Prediction error: " + e.getMessage())

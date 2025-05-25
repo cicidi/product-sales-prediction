@@ -10,8 +10,8 @@ from sklearn2pmml import PMMLPipeline, sklearn2pmml
 
 def train_daily_sales_model():
   # Load original data
-  data = pd.read_csv("./data/prepared_daily_sales.csv", parse_dates=["date"])
-  
+  data = pd.read_csv("../data/prepared_daily_sales.csv", parse_dates=["date"])
+
   # Rename date column to match expected column name
   data = data.rename(columns={"date": "create_timestamp"})
 
@@ -79,14 +79,31 @@ def train_daily_sales_model():
   # Save model
   os.makedirs("model", exist_ok=True)
   try:
-    sklearn2pmml(pipeline, "model/xgb_sales_predictor.pmml", with_repr=True)
+    sklearn2pmml(pipeline, "../model/xgb_sales_predictor.pmml", with_repr=True)
     print("✅ PMML model saved to model/xgb_sales_predictor.pmml")
   except Exception as e:
     print(f"⚠️ PMML export failed: {str(e)}")
 
-  joblib.dump(pipeline, "model/xgb_sales_predictor.pkl")
+  joblib.dump(pipeline, "../model/xgb_sales_predictor.pkl")
   print("✅ Pickle model saved to model/xgb_sales_predictor.pkl")
 
 
+def convert_time():
+
+
+  # 读取 CSV 文件
+  df = pd.read_csv("/home/cicidi/project/product-sales-prediction/product-sale-prediction-AI/data/sales_2023_2025_realistic.csv")
+
+  # 假设时间列名为 create_timestamp，你可以根据实际情况修改列名
+  timestamp_col = "create_timestamp"
+
+  # 转换时间格式
+  df[timestamp_col] = pd.to_datetime(df[timestamp_col], format="%Y/%m/%d %H:%M:%S")
+  df[timestamp_col] = df[timestamp_col].dt.strftime("%Y-%m-%dT%H:%M:%S")
+
+  # 保存为新文件（避免覆盖）
+  df.to_csv("/home/cicidi/project/product-sales-prediction/product-sale-prediction-AI/data/sales_2023_2025_realistic.csv", index=False)
+
 if __name__ == "__main__":
   train_daily_sales_model()
+  # convert_time()   # Uncomment if you need to convert time format

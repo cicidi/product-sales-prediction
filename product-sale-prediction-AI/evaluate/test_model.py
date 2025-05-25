@@ -4,11 +4,11 @@ import pandas as pd
 
 def test_sales_model_with_random_sample():
   # 加载模型
-  model = joblib.load("model/xgb_sales_predictor.pkl")
+  model = joblib.load("../model/xgb_sales_predictor.pkl")
   print("✅ Model loaded successfully.")
 
   # 加载数据
-  data = pd.read_csv("data/prepared_daily_sales.csv", parse_dates=["date"])
+  data = pd.read_csv("../data/prepared_daily_sales.csv", parse_dates=["date"])
   data["create_date"] = data["date"].dt.date
 
   # ✅ 每次随机选一个样本（不固定）

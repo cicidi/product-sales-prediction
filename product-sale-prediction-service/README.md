@@ -170,7 +170,7 @@ Key configuration in `application.properties`:
 
 ```properties
 # Path to the ML model directory
-ml.model.base.path=../product-sale-prediction-AI/train/model
+ml.model.base.path=../product-sale-prediction-AI/model
 # Whether to use the local model or mock predictions
 ml.model.use.local.model=true
 # API endpoint for the Python model server

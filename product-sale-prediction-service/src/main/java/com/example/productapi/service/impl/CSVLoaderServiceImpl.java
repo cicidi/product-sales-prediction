@@ -7,7 +7,7 @@ import com.example.productapi.repository.InventoryRepository;
 import com.example.productapi.repository.OrderRepository;
 import com.example.productapi.repository.ProductRepository;
 import com.example.productapi.service.CSVLoaderService;
-import com.example.productapi.service.EmbeddingService;
+import com.openai.services.blocking.EmbeddingService;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import java.io.IOException;
@@ -39,17 +39,14 @@ public class CSVLoaderServiceImpl implements CSVLoaderService {
   private final ProductRepository productRepository;
   private final OrderRepository orderRepository;
   private final InventoryRepository inventoryRepository;
-  private final EmbeddingService embeddingService;
 
   public CSVLoaderServiceImpl(
       ProductRepository productRepository,
       OrderRepository orderRepository,
-      InventoryRepository inventoryRepository,
-      EmbeddingService embeddingService) {
+      InventoryRepository inventoryRepository) {
     this.productRepository = productRepository;
     this.orderRepository = orderRepository;
     this.inventoryRepository = inventoryRepository;
-    this.embeddingService = embeddingService;
   }
 
   @Override
@@ -62,13 +59,14 @@ public class CSVLoaderServiceImpl implements CSVLoaderService {
   public void init() {
     try {
       // 清空现有数据
-      orderRepository.deleteAll();
-      inventoryRepository.deleteAll();
-      productRepository.deleteAll();
+//      orderRepository.deleteAll();
+//      inventoryRepository.deleteAll();
+//      productRepository.deleteAll();
 
       // 加载产品和销售数据
-      loadProducts();
-      loadSales();
+//      loadProducts();
+//      loadSales();
+      log.info("Data initialization complete.");
     } catch (Exception e) {
       log.error("Error initializing data: {}", e.getMessage(), e);
     }
@@ -110,15 +108,6 @@ public class CSVLoaderServiceImpl implements CSVLoaderService {
 
     log.info("Saving {} products to database", products.size());
     productRepository.saveAll(products);
-
-    // Generate and store embeddings for products
-    for (Product product : products) {
-      try {
-        embeddingService.storeEmbedding(product.getId(), product.getDescription());
-      } catch (Exception e) {
-        log.error("Error generating embedding for product {}: {}", product.getId(), e.getMessage());
-      }
-    }
   }
 
   private void loadSales() throws IOException, CsvValidationException {
@@ -139,7 +128,8 @@ public class CSVLoaderServiceImpl implements CSVLoaderService {
         while ((line = reader.readNext()) != null) {
           try {
             String productId = line[1];
-            String sellerId = line[3];; // 使用固定的卖家ID
+            String sellerId = line[3];
+            ; // 使用固定的卖家ID
             LocalDateTime timestamp = LocalDateTime.parse(line[7], formatter);
 
             Order order = Order.builder()

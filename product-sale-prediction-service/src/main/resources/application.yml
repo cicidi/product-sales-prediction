@@ -7,13 +7,13 @@ spring:
   
   # H2 Database Configuration
   datasource:
-    url: jdbc:h2:mem:productdb;DB_CLOSE_DELAY=-1
-    driverClassName: org.h2.Driver
-    username: sa
+    url: jdbc:postgresql://localhost:5432/intuit_db
+    driverClassName: org.postgresql.Driver
+    username: intuit_user
     password: password
   
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
     hibernate:
       ddl-auto: update
@@ -25,7 +25,6 @@ spring:
   h2:
     console:
       enabled: true
-      path: /h2-console
   
   # Jackson Configuration
   jackson:
@@ -46,6 +45,7 @@ spring:
 logging:
   level:
     com.example.productapi: INFO
+    com.example.productapi.service.impl.PredictionServiceImpl: DEBUG
     org.springframework.web: INFO
     org.hibernate: ERROR
     org.hibernate.SQL: OFF
@@ -102,9 +102,15 @@ springdoc:
 ml:
   model:
     base:
-      path: ../product-sale-prediction-AI/train/model
+      path: ../product-sale-prediction-AI/model
     use:
       local:
         model: true
     api:
-      endpoint: http://localhost:8000/predict 
+      endpoint: http://localhost:8000/predict
+
+# Python Prediction Service Configuration
+python:
+  prediction:
+    service:
+      url: http://localhost:8000 

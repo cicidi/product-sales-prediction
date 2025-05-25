@@ -11,19 +11,20 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 @OpenAPIDefinition(
     info = @Info(
-        title = "Product Predictor Service API",
+        title = " QuickBooks Commerce System Service API",
         version = "1.0",
-        description = "Intelligent E-commerce Prediction System with MCP for LLMs",
-        contact = @Contact(name = "API Support", email = "support@example.com"),
-        license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html")
+        description = "AI powered E-commerce System.\n"
+            + "This API provides API and MCP tool for checking recent top N sales and predicate future sales .\n",
+        contact = @Contact(name = "Author", email = "walterchen.ca@gmail.com"),
+        license = @License(name = "MIT License", url = "https://opensource.org/licenses/MIT")
     ),
     servers = {
-        @Server(url = "/", description = "Default Server URL")
+        @Server(url = "/", description = "http://localhost:8080"),
     }
 )
 public class ProductApiApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(ProductApiApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(ProductApiApplication.class, args);
+  }
 } 

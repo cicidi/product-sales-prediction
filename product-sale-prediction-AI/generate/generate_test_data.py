@@ -22,7 +22,7 @@ class SalesDataGenerator:
     def __init__(self):
         self.start_date = datetime(2023, 1, 1)
         self.end_date = datetime(2025, 5, 24)
-        self.total_orders = 100000
+        self.total_orders = 10000000  # 10 million orders for realistic scale
         
         # Product data (matching final_sample_products.csv)
         self.products = [

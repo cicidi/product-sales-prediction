@@ -113,7 +113,7 @@ No single feature (especially `product_id`) should account for >50% of model imp
 
 ## 📁 Output Files
 
-- `orders.csv`: all simulated orders (100,000 rows)
+- `orders.csv`: all simulated orders (10,000,000 rows)
 - `products.csv`: static product metadata
 - [Optional] `daily_sales.csv`: aggregated by product/day for time series modeling
 

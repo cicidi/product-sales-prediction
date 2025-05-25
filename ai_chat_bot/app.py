@@ -80,6 +80,7 @@ if st.sidebar.checkbox("Show Agent Thought Process", value=False):
     if isinstance(st.session_state.agent, object) and hasattr(st.session_state.agent, 'memory_module'):
         thought_log = st.session_state.agent.memory_module.get_thought_log()
         if thought_log:
+
             st.sidebar.subheader("Agent Thought Process")
             for thought in thought_log:
                 st.sidebar.text(f"{thought['timestamp']}: {thought['thought']}")

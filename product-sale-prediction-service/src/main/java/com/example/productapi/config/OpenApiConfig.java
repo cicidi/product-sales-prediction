@@ -18,16 +18,16 @@ import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
-    
+
     @Value("${server.port:8080}")
     private String serverPort;
-    
+
     private final MCPOpenApiCustomizer mcpOpenApiCustomizer;
 
     public OpenApiConfig(MCPOpenApiCustomizer mcpOpenApiCustomizer) {
         this.mcpOpenApiCustomizer = mcpOpenApiCustomizer;
     }
-    
+
     @Bean
     public OpenAPI productApiOpenAPI() {
         OpenAPI openAPI = new OpenAPI()
@@ -36,19 +36,11 @@ public class OpenApiConfig {
                         .version("v1.0.0")
                         .contact(new Contact()
                                 .name("API Support")
-                                .email("support@example.com"))
+                                .email("walterchen.ca@gmail.com"))
                         .license(new License().name("MIT License").url("https://opensource.org/licenses/MIT")))
                 .servers(Arrays.asList(
                         new Server().url("http://localhost:" + serverPort).description("Development Server"),
                         new Server().url("https://api.example.com").description("Production Server")
-                ))
-                .tags(Arrays.asList(
-                        new Tag().name("Products").description("Product management operations"),
-                        new Tag().name("Orders").description("Order management operations"),
-                        new Tag().name("Vector Search").description("AI-powered vector similarity search"),
-                        new Tag().name("Analytics").description("Sales analytics and reporting"),
-                        new Tag().name("Predictions").description("AI-powered sales predictions"),
-                        new Tag().name("MCP").description("Model-Centric Protocol for LLM integration")
                 ))
                 .components(new Components()
                         .addSecuritySchemes("api_key", new SecurityScheme()
@@ -58,7 +50,7 @@ public class OpenApiConfig {
 
         // Apply MCP customizer
         mcpOpenApiCustomizer.customise(openAPI);
-        
+
         return openAPI;
     }
 } 

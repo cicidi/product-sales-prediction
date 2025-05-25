@@ -4,24 +4,26 @@ import com.example.productapi.mcp.model.ToolDefinition;
 import com.example.productapi.mcp.model.ToolResponse;
 import com.example.productapi.mcp.service.Tool;
 import com.example.productapi.model.Product;
+import com.example.productapi.model.Predications;
 import com.example.productapi.service.ProductService;
-import com.example.productapi.service.SalesPredictionService;
+import com.example.productapi.service.PredictionService;
 import com.example.productapi.util.TimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
 public class SalesPredictionTool implements Tool {
     
-    private final SalesPredictionService predictionService;
+    private final PredictionService predictionService;
     private final ProductService productService;
     private final ToolDefinition definition;
     
     @Autowired
-    public SalesPredictionTool(SalesPredictionService predictionService,
+    public SalesPredictionTool(PredictionService predictionService,
                               ProductService productService) {
         this.predictionService = predictionService;
         this.productService = productService;
@@ -43,33 +45,38 @@ public class SalesPredictionTool implements Tool {
                     ToolDefinition.ParameterDefinition.builder()
                         .name("seller_id")
                         .type("string")
-                        .description("Seller ID, required parameter, specifies the product owner")
+                        .description("Seller ID, required parameter, specifies the seller for sales prediction")
                         .required(true)
                         .example("SELLER789")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
-                        .name("start_time")
-                        .type("string")
-                        .description("Prediction start time, format yyyy/MM (e.g., 2025/06), optional parameter, defaults to current time")
+                        .name("sale_price")
+                        .type("number")
+                        .description("Sale price (optional, if not provided will use original price)")
                         .required(false)
-                        .example("2025/06")
+                        .example(99.99)
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
-                        .name("end_time")
+                        .name("start_date")
                         .type("string")
-                        .description("Prediction end time, format yyyy/MM (e.g., 2025/08), optional parameter, defaults to 3 months after start time")
+                        .description("Start date for prediction, format yyyy/MM/dd (e.g., 2025/05/01), required parameter")
+                        .required(true)
+                        .example("2025/05/01")
+                        .build(),
+                    ToolDefinition.ParameterDefinition.builder()
+                        .name("end_date")
+                        .type("string")
+                        .description("End date for prediction, format yyyy/MM/dd (e.g., 2025/05/31), optional parameter, if not provided will only predict one day")
                         .required(false)
-                        .example("2025/08")
+                        .example("2025/05/31")
                         .build()
                 ))
                 .outputSchema(Map.of(
-                    "product_id", "Product ID",
-                    "seller_id", "Seller ID",
-                    "predictions", "List of predictions",
-                    "start_time", "Prediction start time",
-                    "end_time", "Prediction end time",
-                    "total_predicted_sales", "Total predicted sales volume",
-                    "total_predicted_revenue", "Total predicted revenue"
+                    "predicationList", "List of daily predictions",
+                    "startDate", "Prediction start date",
+                    "endDate", "Prediction end date", 
+                    "totalQuantity", "Total predicted sales quantity",
+                    "totalDays", "Total number of days predicted"
                 ))
                 .build();
     }
@@ -88,49 +95,50 @@ public class SalesPredictionTool implements Tool {
         if (!parameters.containsKey("seller_id")) {
             return ToolResponse.error(getName(), "seller_id is required");
         }
+        if (!parameters.containsKey("start_date")) {
+            return ToolResponse.error(getName(), "start_date is required");
+        }
         
         // Extract parameters
         String productId = parameters.get("product_id").toString();
         String sellerId = parameters.get("seller_id").toString();
         
-        // Get product information
-        Product product;
-        try {
-            product = productService.getProductById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
-        } catch (Exception e) {
-            return ToolResponse.error(getName(), "Error getting product: " + e.getMessage());
+        // Parse sale price (optional)
+        Double salePrice = null;
+        if (parameters.containsKey("sale_price")) {
+            try {
+                salePrice = Double.parseDouble(parameters.get("sale_price").toString());
+            } catch (NumberFormatException e) {
+                return ToolResponse.error(getName(), "Invalid sale_price format");
+            }
         }
         
-        // Parse times
-        LocalDateTime startTime;
-        LocalDateTime endTime;
+        // Parse dates
+        LocalDate startDate;
+        LocalDate endDate = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         try {
-            startTime = parameters.containsKey("start_time") ? 
-                TimeUtils.parseYearMonth(parameters.get("start_time").toString()) :
-                LocalDateTime.now();
-                
-            endTime = parameters.containsKey("end_time") ? 
-                TimeUtils.parseYearMonth(parameters.get("end_time").toString()).plusMonths(1).minusNanos(1) :
-                startTime.plusMonths(3);
+            startDate = LocalDate.parse(parameters.get("start_date").toString(), formatter);
+            
+            if (parameters.containsKey("end_date")) {
+                endDate = LocalDate.parse(parameters.get("end_date").toString(), formatter);
+            }
         } catch (Exception e) {
-            return ToolResponse.error(getName(), "Error parsing dates: " + e.getMessage());
+            return ToolResponse.error(getName(), "Error parsing dates (expected format yyyy/MM/dd): " + e.getMessage());
         }
         
         try {
-            // Make prediction using the unified method
-            Map<String, Object> prediction = predictionService.predictProductSales(
-                product, sellerId, startTime, endTime);
+            // Make prediction using PredictionService
+            Predications predictions = predictionService.predictSales(
+                productId, sellerId, salePrice, startDate, endDate);
             
             // Build response
             Map<String, Object> response = new HashMap<>();
             response.put("product_id", productId);
             response.put("seller_id", sellerId);
-            response.put("predictions", prediction.get("predictions"));
-            response.put("start_time", startTime.toString());
-            response.put("end_time", endTime.toString());
-            response.put("total_predicted_sales", prediction.get("total_sales"));
-            response.put("total_predicted_revenue", prediction.get("total_revenue"));
+            response.put("predictions", predictions);
+            response.put("start_date", startDate.toString());
+            response.put("end_date", endDate != null ? endDate.toString() : null);
             
             return ToolResponse.success(getName(), response);
         } catch (Exception e) {

@@ -81,3 +81,4 @@ _backup/
 *.db
 #application log
 session_*_history.json
+**sales_2023_2025_realistic.csv

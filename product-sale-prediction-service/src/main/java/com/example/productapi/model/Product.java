@@ -1,5 +1,6 @@
 package com.example.productapi.model;
 
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "product")
 public class Product {
 
     @Id

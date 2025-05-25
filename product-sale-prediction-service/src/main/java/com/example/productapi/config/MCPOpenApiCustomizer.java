@@ -23,16 +23,16 @@ public class MCPOpenApiCustomizer implements OpenApiCustomizer {
 
     private final ToolRegistry toolRegistry;
     
-    // 定义工具的顺序
+    // Define the order of tools
     private static final List<String> TOOL_ORDER = Arrays.asList(
-        "analyze_sales",
-        "search_products",
-        "predict_product_sales",
-        "get_product_detail",
         "list_orders",
         "list_products",
-        "search_similar_products",
-        "manage_product"
+        "manage_product",
+        "analyze_sales",
+        "predict_product_sales",
+        "get_product_detail",
+        "search_products",
+        "search_similar_products"
     );
 
     public MCPOpenApiCustomizer(ToolRegistry toolRegistry) {

@@ -1,17 +1,10 @@
 package com.example.productapi.service;
 
-import com.example.productapi.dto.SimilarProductSearchRequest;
 import com.example.productapi.model.Product;
-import com.example.productapi.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /*
  * Service interface for product operations
@@ -28,11 +21,6 @@ public interface ProductService {
      */
     Optional<Product> getProductById(String id);
     
-    /**
-     * Find similar products based on product ID or description
-     */
-    List<Product> findSimilarProducts(SimilarProductSearchRequest request);
-
     /**
      * Create new product
      * 
