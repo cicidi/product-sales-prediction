@@ -1,0 +1,23 @@
+.data-table-card {
+  margin-bottom: 20px;
+}
+
+.sales-table {
+  width: 100%;
+}
+
+.historical-badge {
+  background-color: #2196F3;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.prediction-badge {
+  background-color: #F44336;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+} 

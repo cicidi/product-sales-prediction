@@ -1,0 +1,9 @@
+.chart-card {
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+} 

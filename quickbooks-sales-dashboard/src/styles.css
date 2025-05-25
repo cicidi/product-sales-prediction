@@ -1,0 +1,52 @@
+/* You can add global styles to this file, and also import other style files */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* QuickBooks Style Theme */
+:root {
+  --primary-color: #0077C5;
+  --secondary-color: #F8F9FA;
+  --text-color: #333;
+  --border-color: #E0E0E0;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+}
+
+/* Material Design Overrides for QuickBooks Style */
+.mat-mdc-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+.mat-mdc-raised-button.mat-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.mat-mdc-form-field-outline {
+  color: var(--border-color) !important;
+}
+
+.mat-mdc-form-field-focus-overlay {
+  background-color: var(--primary-color) !important;
+}
+
+/* Custom QuickBooks-style elements */
+.quickbooks-header {
+  background: linear-gradient(135deg, var(--primary-color), #005a9e);
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.business-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
