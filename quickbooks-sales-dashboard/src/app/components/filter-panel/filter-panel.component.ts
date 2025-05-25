@@ -33,19 +33,21 @@ export class FilterPanelComponent implements OnInit {
   sellers = SELLERS;
   timeRanges = TIME_RANGES;
   categories = [...new Set(PRODUCTS.map(p => p.category))];
+  topNOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   constructor(private fb: FormBuilder) {
     this.filterForm = this.fb.group({
       sellerId: ['seller_1'],
       productId: ['p100'],
       category: [''],
+      topN: [''],
       startDate: [new Date(2025, 4, 10)],
       endDate: [new Date(2025, 5, 10)],
       timeRange: ['']
     });
 
     this.filterForm.valueChanges.subscribe(value => {
-      if (value.sellerId && value.productId && value.startDate && value.endDate) {
+      if (value.sellerId && value.startDate && value.endDate) {
         // 转换日期格式为API需要的格式
         const formattedValue = {
           ...value,
@@ -60,7 +62,7 @@ export class FilterPanelComponent implements OnInit {
   ngOnInit() {
     // 触发初始数据加载
     const initialValue = this.filterForm.value;
-    if (initialValue.sellerId && initialValue.productId && initialValue.startDate && initialValue.endDate) {
+    if (initialValue.sellerId && initialValue.startDate && initialValue.endDate) {
       const formattedValue = {
         ...initialValue,
         startDate: this.formatDateForApi(initialValue.startDate),
@@ -68,6 +70,28 @@ export class FilterPanelComponent implements OnInit {
       };
       this.filterChange.emit(formattedValue);
     }
+  }
+
+  onProductIdChange() {
+    // When Product ID is selected, clear Top N and Category
+    this.filterForm.patchValue({
+      topN: '',
+      category: ''
+    }, { emitEvent: false });
+  }
+
+  onCategoryChange() {
+    // When Category is selected, clear Product ID
+    this.filterForm.patchValue({
+      productId: ''
+    }, { emitEvent: false });
+  }
+
+  onTopNChange() {
+    // When Top N is selected, clear Product ID
+    this.filterForm.patchValue({
+      productId: ''
+    }, { emitEvent: false });
   }
 
   onTimeRangeChange(range: string) {

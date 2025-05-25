@@ -43,4 +43,5 @@ export interface ChartData {
   date: string;
   quantity: number;
   type: 'historical' | 'prediction';
+  productId?: string;
 } 

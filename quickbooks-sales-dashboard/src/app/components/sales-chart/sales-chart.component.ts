@@ -91,16 +91,40 @@ export class SalesChartComponent {
 
     const historical = data.filter(d => d.type === 'historical');
     const prediction = data.filter(d => d.type === 'prediction');
+    const products = [...new Set(historical.map(d => d.productId).filter(Boolean))];
+    
+    const historicalColors = ['#2196F3', '#00BCD4', '#4CAF50', '#8BC34A', '#CDDC39'];
+    const predictionColors = ['#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5'];
 
     const labels = [...new Set(data.map(d => d.date))];
     this.chart.data.labels = labels;
-    this.chart.data.datasets[0].data = labels.map(date => {
-      const item = historical.find(d => d.date === date);
-      return item ? item.quantity : null;
-    });
-    this.chart.data.datasets[1].data = labels.map(date => {
-      const item = prediction.find(d => d.date === date);
-      return item ? item.quantity : null;
+    this.chart.data.datasets = [];
+
+    // Create datasets for each product
+    products.forEach((productId, index) => {
+      // Historical dataset
+      this.chart!.data.datasets.push({
+        label: `${productId} Historical`,
+        data: labels.map(date => {
+          const item = historical.find(d => d.date === date && d.productId === productId);
+          return item ? item.quantity : null;
+        }),
+        borderColor: historicalColors[index % historicalColors.length],
+        backgroundColor: historicalColors[index % historicalColors.length] + '20',
+        tension: 0.1
+      });
+
+      // Prediction dataset
+      this.chart!.data.datasets.push({
+        label: `${productId} Prediction`,
+        data: labels.map(date => {
+          const item = prediction.find(d => d.date === date && d.productId === productId);
+          return item ? item.quantity : null;
+        }),
+        borderColor: predictionColors[index % predictionColors.length],
+        backgroundColor: predictionColors[index % predictionColors.length] + '20',
+        tension: 0.1
+      });
     });
 
     this.chart.update();

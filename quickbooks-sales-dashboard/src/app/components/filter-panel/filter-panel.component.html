@@ -16,7 +16,8 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Product ID</mat-label>
-          <mat-select formControlName="productId">
+          <mat-select formControlName="productId" (selectionChange)="onProductIdChange()">
+            <mat-option value="">N/A</mat-option>
             <mat-option *ngFor="let product of products" [value]="product.id">
               {{product.id}} - {{product.name}}
             </mat-option>
@@ -25,10 +26,20 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Category</mat-label>
-          <mat-select formControlName="category">
+          <mat-select formControlName="category" (selectionChange)="onCategoryChange()">
             <mat-option value="">All Categories</mat-option>
             <mat-option *ngFor="let category of categories" [value]="category">
               {{category}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Top N</mat-label>
+          <mat-select formControlName="topN" (selectionChange)="onTopNChange()">
+            <mat-option value="">N/A</mat-option>
+            <mat-option *ngFor="let num of topNOptions" [value]="num">
+              Top {{num}}
             </mat-option>
           </mat-select>
         </mat-form-field>

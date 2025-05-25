@@ -32,7 +32,9 @@ export class DashboardComponent {
       filterData.sellerId,
       filterData.productId,
       filterData.startDate,
-      filterData.endDate
+      filterData.endDate,
+      filterData.topN,
+      filterData.category
     ).subscribe(data => {
       this.salesData = data;
     });

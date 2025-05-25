@@ -27,7 +27,7 @@ export class DataTableComponent {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  displayedColumns: string[] = ['date', 'quantity', 'type'];
+  displayedColumns: string[] = ['date', 'productId', 'quantity', 'type'];
   dataSource = new MatTableDataSource<ChartData>();
 
   ngAfterViewInit() {
