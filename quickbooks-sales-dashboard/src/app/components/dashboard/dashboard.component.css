@@ -1,47 +1,152 @@
 .dashboard-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1fr;
+  animation: fadeIn 0.6s ease-in-out;
 }
 
 .dashboard-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
-.dashboard-header h1 {
-  color: #0077C5;
-  margin-bottom: 10px;
+.dashboard-title {
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
 }
 
-.dashboard-header p {
-  color: #666;
+.dashboard-subtitle {
   font-size: 16px;
+  color: #6c757d;
+  font-weight: 400;
 }
 
-.dashboard-content {
+.content-grid {
   display: grid;
+  gap: 6px;
   grid-template-columns: 1fr;
-  gap: 20px;
+  grid-template-rows: auto 1fr 1fr;
+  flex: 1;
+  min-height: 0; /* 允许网格收缩 */
 }
 
-.placeholder-section {
-  margin-top: 30px;
+.filter-section {
+  grid-row: 1;
+  align-self: start; /* 只占用需要的高度 */
 }
 
-.placeholder-card {
-  text-align: center;
+.chart-section {
+  grid-row: 3;
 }
 
-.placeholder-buttons {
+.data-section {
+  grid-row: 2;
+}
+
+/* Card Enhancements - 每个区域占满分配的空间 */
+.chart-section,
+.data-section {
   display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  height: 100%;
 }
 
-@media (min-width: 768px) {
-  .dashboard-content {
-    grid-template-columns: 2fr 1fr;
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  height: auto; /* 过滤面板自适应高度 */
+}
+
+.filter-section > * {
+  display: flex;
+  flex-direction: column;
+  height: auto; /* 过滤面板卡片自适应高度 */
+}
+
+.chart-section > *,
+.data-section > * {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  height: auto; /* 过滤面板卡片自适应高度 */
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card,
+.data-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 移除响应式布局，保持三个等高长方体 */
+
+@media (max-width: 767px) {
+  .dashboard-title {
+    font-size: 24px;
   }
+  
+  .dashboard-subtitle {
+    font-size: 14px;
+  }
+  
+  .content-grid {
+    gap: 4px;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #6c757d;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 } 

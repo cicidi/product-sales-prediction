@@ -4,6 +4,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatCardModule } from '@angular/material/card';
 import { ChartData } from '../../models/interfaces';
+import { PRODUCTS } from '../../constants';
 
 @Component({
   selector: 'app-data-table',
@@ -27,10 +28,21 @@ export class DataTableComponent {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  displayedColumns: string[] = ['date', 'productId', 'quantity', 'type'];
+  displayedColumns: string[] = ['date', 'productId', 'productName', 'quantity', 'type'];
   dataSource = new MatTableDataSource<ChartData>();
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
+  }
+
+  getProductName(productId: string): string {
+    const product = PRODUCTS.find(p => p.id === productId);
+    return product ? product.name : productId || 'Unknown Product';
+  }
+
+  getDayOfWeek(dateString: string): string {
+    const date = new Date(dateString);
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[date.getUTCDay()];
   }
 } 

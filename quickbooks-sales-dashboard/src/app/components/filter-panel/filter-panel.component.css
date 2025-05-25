@@ -1,20 +1,147 @@
 .filter-panel {
-  margin-bottom: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3) !important;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.filter-panel .mat-mdc-card-header {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-panel .mat-mdc-card-title {
+  color: white !important;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-panel .mat-mdc-card-title::before {
+  content: '🔍';
+  font-size: 18px;
+}
+
+.filter-panel .mat-mdc-card-content {
+  padding: 24px;
 }
 
 .filter-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .filter-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  flex-wrap: wrap;
+  align-items: start;
 }
 
-.filter-row mat-form-field {
-  flex: 1;
-  min-width: 200px;
+/* Custom Material Field Styling for Filter Panel */
+.filter-panel ::ng-deep .mat-mdc-form-field {
+  margin-bottom: 0;
+}
+
+.filter-panel ::ng-deep .mat-mdc-form-field .mat-mdc-form-field-outline {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px !important;
+}
+
+.filter-panel ::ng-deep .mat-mdc-form-field .mat-mdc-form-field-outline-thick {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.filter-panel ::ng-deep .mat-mdc-form-field .mat-mdc-form-field-outline-start,
+.filter-panel ::ng-deep .mat-mdc-form-field .mat-mdc-form-field-outline-end {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.filter-panel ::ng-deep .mat-mdc-form-field .mat-mdc-form-field-outline-gap {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.filter-panel ::ng-deep .mat-mdc-form-field.mat-focused .mat-mdc-form-field-outline-thick {
+  border-color: white !important;
+}
+
+.filter-panel ::ng-deep .mat-mdc-form-field .mat-mdc-floating-label {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.filter-panel ::ng-deep .mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+  color: white !important;
+}
+
+.filter-panel ::ng-deep .mat-mdc-select-value,
+.filter-panel ::ng-deep .mat-mdc-input-element {
+  color: white !important;
+}
+
+.filter-panel ::ng-deep .mat-mdc-select-arrow {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.filter-panel ::ng-deep .mat-datepicker-toggle {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.filter-panel ::ng-deep .mat-mdc-input-element::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .filter-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .filter-panel .mat-mdc-card-content {
+    padding: 16px;
+  }
+  
+  .filter-panel .mat-mdc-card-header {
+    padding: 16px 16px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-panel .mat-mdc-card-title {
+    font-size: 18px;
+  }
+}
+
+/* Animation */
+.filter-panel {
+  animation: slideInFromTop 0.5s ease-out;
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover Effects */
+.filter-panel ::ng-deep .mat-mdc-form-field:hover .mat-mdc-form-field-outline {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.filter-panel ::ng-deep .mat-mdc-form-field:hover .mat-mdc-form-field-outline-start,
+.filter-panel ::ng-deep .mat-mdc-form-field:hover .mat-mdc-form-field-outline-end,
+.filter-panel ::ng-deep .mat-mdc-form-field:hover .mat-mdc-form-field-outline-gap {
+  border-color: rgba(255, 255, 255, 0.4) !important;
 } 

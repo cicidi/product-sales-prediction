@@ -1,9 +1,68 @@
 .data-table-card {
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0;
+}
+
+.data-table-card .mat-mdc-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow: hidden;
 }
 
 .sales-table {
   width: 100%;
+  flex: 1;
+  height: 100%;
+  background-color: transparent;
+  border-radius: 0;
+}
+
+.sales-table .mat-mdc-row,
+.sales-table .mdc-data-table__row,
+.sales-table .cdk-row {
+  height: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.sales-table .mat-mdc-header-row,
+.sales-table .mdc-data-table__header-row,
+.sales-table .cdk-header-row {
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.sales-table .mat-mdc-cell,
+.sales-table .mat-mdc-header-cell {
+  padding: 2px 4px !important;
+  line-height: 1.1 !important;
+  font-size: 13px !important;
+}
+
+.table-container {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.table-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .historical-badge {
