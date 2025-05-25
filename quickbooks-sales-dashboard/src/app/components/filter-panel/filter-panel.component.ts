@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -25,21 +25,22 @@ import { PRODUCTS, SELLERS, TIME_RANGES } from '../../constants';
   templateUrl: './filter-panel.component.html',
   styleUrls: ['./filter-panel.component.css']
 })
-export class FilterPanelComponent {
+export class FilterPanelComponent implements OnInit {
   @Output() filterChange = new EventEmitter<any>();
 
   filterForm: FormGroup;
   products = PRODUCTS;
   sellers = SELLERS;
   timeRanges = TIME_RANGES;
+  categories = [...new Set(PRODUCTS.map(p => p.category))];
 
   constructor(private fb: FormBuilder) {
     this.filterForm = this.fb.group({
       sellerId: ['seller_1'],
-      productId: [''],
+      productId: ['p100'],
       category: [''],
-      startDate: [null],
-      endDate: [null],
+      startDate: [new Date(2025, 4, 10)],
+      endDate: [new Date(2025, 5, 10)],
       timeRange: ['']
     });
 
@@ -54,6 +55,19 @@ export class FilterPanelComponent {
         this.filterChange.emit(formattedValue);
       }
     });
+  }
+
+  ngOnInit() {
+    // 触发初始数据加载
+    const initialValue = this.filterForm.value;
+    if (initialValue.sellerId && initialValue.productId && initialValue.startDate && initialValue.endDate) {
+      const formattedValue = {
+        ...initialValue,
+        startDate: this.formatDateForApi(initialValue.startDate),
+        endDate: this.formatDateForApi(initialValue.endDate)
+      };
+      this.filterChange.emit(formattedValue);
+    }
   }
 
   onTimeRangeChange(range: string) {

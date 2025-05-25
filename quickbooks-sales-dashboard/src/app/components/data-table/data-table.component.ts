@@ -19,7 +19,10 @@ import { ChartData } from '../../models/interfaces';
 })
 export class DataTableComponent {
   @Input() set data(value: ChartData[]) {
-    this.dataSource.data = value || [];
+    const sortedData = (value || []).sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    this.dataSource.data = sortedData;
   }
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;

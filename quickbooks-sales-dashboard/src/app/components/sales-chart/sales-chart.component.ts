@@ -1,7 +1,7 @@
 import { Component, Input, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { Chart, ChartConfiguration, ChartType } from 'chart.js';
+import { Chart, ChartConfiguration, ChartType } from 'chart.js/auto';
 import { ChartData } from '../../models/interfaces';
 
 @Component({
@@ -92,9 +92,16 @@ export class SalesChartComponent {
     const historical = data.filter(d => d.type === 'historical');
     const prediction = data.filter(d => d.type === 'prediction');
 
-    this.chart.data.labels = [...new Set(data.map(d => d.date))];
-    this.chart.data.datasets[0].data = historical.map(d => d.quantity);
-    this.chart.data.datasets[1].data = prediction.map(d => d.quantity);
+    const labels = [...new Set(data.map(d => d.date))];
+    this.chart.data.labels = labels;
+    this.chart.data.datasets[0].data = labels.map(date => {
+      const item = historical.find(d => d.date === date);
+      return item ? item.quantity : null;
+    });
+    this.chart.data.datasets[1].data = labels.map(date => {
+      const item = prediction.find(d => d.date === date);
+      return item ? item.quantity : null;
+    });
 
     this.chart.update();
   }
