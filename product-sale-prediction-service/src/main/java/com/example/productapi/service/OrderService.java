@@ -1,5 +1,7 @@
 package com.example.productapi.service;
 
+import com.example.productapi.dto.GetOrdersResponse;
+import com.example.productapi.dto.ProductSalesSummary;
 import com.example.productapi.model.Order;
 import org.springframework.data.domain.Page;
 
@@ -37,4 +39,39 @@ public interface OrderService {
       LocalDateTime endTime,
       int page,
       int size);
+
+  /**
+   * Generate aggregation data for orders
+   *
+   * @param orders List of orders to aggregate
+   * @return Map containing dailyProductSales and totalSummary
+   */
+  Map<String, Object> generateAggregationData(List<Order> orders);
+
+  /**
+   * Generate typed aggregation data for orders
+   *
+   * @param orders List of orders to aggregate
+   * @return Map containing typed ProductSalesSummary lists
+   */
+  Map<String, List<ProductSalesSummary>> generateTypedAggregationData(List<Order> orders);
+
+  /**
+   * Build GetOrdersResponse with pagination and aggregation data
+   *
+   * @param orderPage Page of orders
+   * @param sellerId Optional seller ID filter
+   * @param productId Optional product ID filter
+   * @param category Optional category filter
+   * @param startTime Start time for filtering
+   * @param endTime End time for filtering
+   * @return Complete GetOrdersResponse
+   */
+  GetOrdersResponse buildGetOrdersResponse(
+      Page<Order> orderPage,
+      String sellerId,
+      String productId,
+      String category,
+      LocalDateTime startTime,
+      LocalDateTime endTime);
 }

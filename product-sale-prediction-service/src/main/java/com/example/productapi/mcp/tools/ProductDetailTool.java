@@ -32,7 +32,7 @@ public class ProductDetailTool implements Tool {
                 .type("string")
                 .description("Product ID, required parameter, used to query specific product details")
                 .required(true)
-                .example("P123456")
+                .example("p100")
                 .build()
         ))
         .outputSchema(Map.of(

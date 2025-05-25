@@ -1,6 +1,5 @@
 package com.example.productapi.controller;
 
-import com.example.productapi.mcp.model.ToolResponse;
 import com.example.productapi.model.Order;
 import com.example.productapi.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,19 +8,17 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/v1")
@@ -95,6 +92,8 @@ public class OrderController {
 
     Map<String, Object> response = new HashMap<>();
     response.put("orders", orderPage.getContent());
+    response.put("startTime", startDateTime);
+    response.put("endTime", endDateTime);
     response.put("currentPage", orderPage.getNumber());
     response.put("totalItems", orderPage.getTotalElements());
     response.put("totalPages", orderPage.getTotalPages());
@@ -109,8 +108,6 @@ public class OrderController {
     if (category != null) {
       response.put("category", category);
     }
-    response.put("startTime", startDateTime.toString());
-    response.put("endTime", endDateTime.toString());
 
     return ResponseEntity.ok(response);
   }

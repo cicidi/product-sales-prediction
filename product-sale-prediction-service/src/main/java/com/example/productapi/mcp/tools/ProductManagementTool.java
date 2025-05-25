@@ -31,14 +31,14 @@ public class ProductManagementTool implements Tool {
                         .type("string")
                         .description("Product ID, required for updates")
                         .required(false)
-                        .example("P123456")
+                        .example("p100")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("seller_id")
                         .type("string")
                         .description("Seller ID, required for creation")
                         .required(false)
-                        .example("SELLER789")
+                        .example("seller_1")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("name")

@@ -3,6 +3,8 @@ package com.example.productapi.controller;
 import com.example.productapi.dto.SalesSearchRequest;
 import com.example.productapi.dto.PredictionRequest;
 import com.example.productapi.dto.TopSellingProductResponse;
+import com.example.productapi.dto.ProductSalesSummary;
+import com.example.productapi.dto.SalesAnalyticsResponse;
 import com.example.productapi.model.Product;
 import com.example.productapi.model.Predications;
 import com.example.productapi.service.OrderService;
@@ -19,10 +21,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/sales")
@@ -46,27 +50,19 @@ public class SalesAnalyticsController {
     }
     
     @Operation(
-        summary = "Analytics for top selling products",
-        description = "Find top selling products by time range, category, and optionally filtered by seller ID"
+        summary = "Sales analytics with daily and total summaries",
+        description = "Get daily product sales summary and total summary for a time range. If topN is provided, returns only top N products by total sales."
     )
     @ApiResponse(
         responseCode = "200", 
-        description = "Search results",
+        description = "Sales analytics results",
         content = @Content(mediaType = "application/json")
     )
     @PostMapping("/analytics")
-    public ResponseEntity<Map<String, Object>> searchTopSellingProducts(@RequestBody SalesSearchRequest request) {
-        // Validate request
-        if (request.getTopN() == null || request.getTopN() <= 0) {
-            return ResponseEntity.badRequest().body(
-                Map.of("error", "topN parameter is required and must be greater than 0")
-            );
-        }
-        
+    public ResponseEntity<SalesAnalyticsResponse> searchTopSellingProducts(@RequestBody SalesSearchRequest request) {
+        // Validate request - topN is now optional
         if (request.getStartTime() == null || request.getStartTime().isEmpty()) {
-            return ResponseEntity.badRequest().body(
-                Map.of("error", "startTime parameter is required")
-            );
+            return ResponseEntity.badRequest().build();
         }
         
         // Parse start time
@@ -74,9 +70,7 @@ public class SalesAnalyticsController {
         try {
             startTime = TimeUtils.parseDate(request.getStartTime());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                Map.of("error", e.getMessage())
-            );
+            return ResponseEntity.badRequest().build();
         }
         
         // Parse end time or use current time
@@ -85,31 +79,70 @@ public class SalesAnalyticsController {
             try {
                 endTime = TimeUtils.parseDateEndOfDay(request.getEndTime());
             } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().body(
-                    Map.of("error", e.getMessage())
-                );
+                return ResponseEntity.badRequest().build();
             }
         } else {
             endTime = LocalDateTime.now();
         }
-        
-        // Get top selling products
-        List<TopSellingProductResponse> topProducts = salesAnalyticsService.getTopSellingProducts(
-            request.getSellerId(), // Now optional
+
+        // Get all orders for the time range
+        List<com.example.productapi.model.Order> orders = orderService.getOrdersWithFilters(
+            request.getSellerId(),
+            request.getProductId(),
             request.getCategory(),
             startTime,
             endTime,
-            request.getTopN(),
-            true // Include revenue information
-        );
+            0,
+            Integer.MAX_VALUE
+        ).getContent();
+
+        // Generate aggregation data
+        Map<String, List<ProductSalesSummary>> aggregationData = orderService.generateTypedAggregationData(orders);
         
+        List<ProductSalesSummary> dailyProductSales = aggregationData.get("dailyProductSales");
+        List<ProductSalesSummary> totalSummary = aggregationData.get("totalSummary");
+
+        // Apply topN filter if provided
+        if (request.getTopN() != null && request.getTopN() > 0) {
+            // Get top N products by total sales
+            List<String> topProductIds = totalSummary.stream()
+                .limit(request.getTopN())
+                .map(ProductSalesSummary::getProductId)
+                .collect(Collectors.toList());
+            
+            // Filter daily sales to only include top N products
+            dailyProductSales = dailyProductSales.stream()
+                .filter(summary -> topProductIds.contains(summary.getProductId()))
+                .collect(Collectors.toList());
+            
+            // Limit total summary to top N
+            totalSummary = totalSummary.stream()
+                .limit(request.getTopN())
+                .collect(Collectors.toList());
+        }
+
         // Build response
-        Map<String, Object> response = new HashMap<>();
-        response.put("products", topProducts);
-        response.put("count", topProducts.size());
-        response.put("query", request);
+        SalesAnalyticsResponse.SalesAnalyticsResponseBuilder builder = SalesAnalyticsResponse.builder()
+            .dailyProductSales(dailyProductSales)
+            .totalSummary(totalSummary)
+            .startTime(startTime)
+            .endTime(endTime);
         
-        return ResponseEntity.ok(response);
+        // Add filter information to response
+        if (request.getSellerId() != null) {
+            builder.sellerId(request.getSellerId());
+        }
+        if (request.getProductId() != null) {
+            builder.productId(request.getProductId());
+        }
+        if (request.getCategory() != null) {
+            builder.category(request.getCategory());
+        }
+        if (request.getTopN() != null) {
+            builder.topN(request.getTopN());
+        }
+
+        return ResponseEntity.ok(builder.build());
     }
     
     @Operation(
@@ -167,4 +200,6 @@ public class SalesAnalyticsController {
             );
         }
     }
+
+
 } 

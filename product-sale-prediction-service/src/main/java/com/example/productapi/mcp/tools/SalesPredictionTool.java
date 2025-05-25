@@ -40,14 +40,14 @@ public class SalesPredictionTool implements Tool {
                         .type("string")
                         .description("Product ID, required parameter, specifies the product for sales prediction")
                         .required(true)
-                        .example("P123456")
+                        .example("p100")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("seller_id")
                         .type("string")
                         .description("Seller ID, required parameter, specifies the seller for sales prediction")
                         .required(true)
-                        .example("SELLER789")
+                        .example("seller_1")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("sale_price")
@@ -59,16 +59,16 @@ public class SalesPredictionTool implements Tool {
                     ToolDefinition.ParameterDefinition.builder()
                         .name("start_date")
                         .type("string")
-                        .description("Start date for prediction, format yyyy/MM/dd (e.g., 2025/05/01), required parameter")
+                        .description("Start date for prediction, format yyyy/MM/dd (e.g., 2025/06/01), required parameter")
                         .required(true)
-                        .example("2025/05/01")
+                        .example("2025/06/01")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("end_date")
                         .type("string")
-                        .description("End date for prediction, format yyyy/MM/dd (e.g., 2025/05/31), optional parameter, if not provided will only predict one day")
+                        .description("End date for prediction, format yyyy/MM/dd (e.g., 2025/06/01), optional parameter, if not provided will only predict one day")
                         .required(false)
-                        .example("2025/05/31")
+                        .example("2025/06/01")
                         .build()
                 ))
                 .outputSchema(Map.of(
@@ -119,7 +119,7 @@ public class SalesPredictionTool implements Tool {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         try {
             startDate = LocalDate.parse(parameters.get("start_date").toString(), formatter);
-            
+                
             if (parameters.containsKey("end_date")) {
                 endDate = LocalDate.parse(parameters.get("end_date").toString(), formatter);
             }

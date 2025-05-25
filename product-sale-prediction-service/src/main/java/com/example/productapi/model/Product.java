@@ -33,11 +33,6 @@ public class Product {
     @Column(name = "create_timestamp")
     private LocalDateTime createTimestamp;
     
-    @Lob
-    @Column(length = 5000)
+    @Column
     private String description;
-    
-    @Transient
-    private List<Float> descriptionVector;
-
 }

@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class PredictionRequest {
     
-    @Schema(description = "Product ID", example = "P123456", required = true)
+    @Schema(description = "Product ID", example = "p100", required = true)
     private String productId;
     
     @Schema(description = "Seller ID", example = "seller_1", required = true)
@@ -21,9 +21,9 @@ public class PredictionRequest {
     @Schema(description = "Sale price (optional, if not provided will use original price)", example = "99.99")
     private Double salePrice;
     
-    @Schema(description = "Start date for prediction", example = "2025/05/01", required = true)
+    @Schema(description = "Start date for prediction", example = "2025/06/01", required = true)
     private LocalDate startDate;
     
-    @Schema(description = "End date for prediction (optional, if not provided will only predict one day)", example = "2025/05/31")
+    @Schema(description = "End date for prediction (optional, if not provided will only predict one day)", example = "2025/06/01")
     private LocalDate endDate;
 } 

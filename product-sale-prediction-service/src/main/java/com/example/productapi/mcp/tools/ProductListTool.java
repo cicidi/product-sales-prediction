@@ -39,7 +39,7 @@ public class ProductListTool implements Tool {
                         .type("string")
                         .description("Seller ID, optional parameter, used to filter products by seller")
                         .required(false)
-                        .example("SELLER789")
+                        .example("seller_1")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("page")

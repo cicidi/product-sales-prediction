@@ -36,14 +36,14 @@ public class OrderListTool implements Tool {
                         .type("string")
                         .description("Seller ID, required parameter, sellers cannot view other sellers' orders")
                         .required(true)
-                        .example("SELLER789")
+                        .example("seller_1")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("start_time")
                         .type("string")
-                        .description("Start time (format: yyyy/MM/dd), optional parameter, defaults to 2025/02/01")
+                        .description("Start time (format: yyyy/MM/dd), optional parameter, defaults to 2025/05/01")
                         .required(false)
-                        .example("2025/02/01")
+                        .example("2025/05/01")
                         .build(),
                     ToolDefinition.ParameterDefinition.builder()
                         .name("end_time")
@@ -97,7 +97,7 @@ public class OrderListTool implements Tool {
         
         // Handle time parameters
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-        LocalDateTime startTime = LocalDateTime.parse("2025/02/01 00:00:00", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+        LocalDateTime startTime = LocalDateTime.parse("2025/05/01 00:00:00", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
         LocalDateTime endTime = LocalDateTime.parse("2025/05/01 23:59:59", DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
         
         if (parameters.containsKey("start_time") && parameters.get("start_time") != null) {
@@ -162,7 +162,7 @@ public class OrderListTool implements Tool {
                 size
             );
             
-            // Build response
+            // Build response with aggregation
             Map<String, Object> result = new HashMap<>();
             result.put("orders", convertOrders(orderPage.getContent()));
             result.put("current_page", orderPage.getNumber());
@@ -170,6 +170,8 @@ public class OrderListTool implements Tool {
             result.put("total_pages", orderPage.getTotalPages());
             result.put("start_time", startTime.format(dateFormatter));
             result.put("end_time", endTime.format(dateFormatter));
+            
+
             
             return ToolResponse.success(getName(), result);
         } catch (Exception e) {
@@ -191,4 +193,7 @@ public class OrderListTool implements Tool {
             return orderMap;
         }).collect(Collectors.toList());
     }
+
+
+
 } 
