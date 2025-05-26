@@ -1,1 +1,267 @@
-# product-sales-prediction
+# Product Sales Prediction System Design
+
+---
+
+## A. Requirements Definition
+
+### ✅ Problem Statement
+
+Design a system to predict **“What will be the top-selling products by category for a given seller
+and time window?”** in QuickBooks Commerce.
+
+### ✅ High-Level Requirements
+
+- Predict top-N selling products using AI/ML based on historical and contextual signals
+- Provide a user-friendly dashboard and chatbot for seller-side access
+- Ensure system scalability, reliability, observability
+
+### ✅ Goals Breakdown
+
+#### 📝 Business Objectives
+
+- **Inputs:**
+    - Seller ID
+    - Product Category
+    - Time Range (e.g. next week/month/year)
+    - Top-N value
+
+- **Output:**
+    - Ranked list of predicted top-selling products with estimated quantities
+
+- **User Scenario:**  
+  A seller wants to know what products will perform best next week in “Electronics” category. They
+  log into QuickBooks, input category and time range, and get predictions to support marketing
+  decisions.
+
+- **Service Scale:**
+    - ~10,000 sellers × 1,000 daily orders → 10M orders/day
+    - ~100 requests/sec at peak (holiday seasons)
+    - 10k seller, every use has 10 request per day, 1 requests per second.
+
+- **Data Sources:**
+    - Historical order data
+    - Product metadata
+    - Seller-product relationships
+
+#### 📌 AI Application Points
+
+- Supervised regression or time-series forecasting models for product-level sales
+- LLM + Agent for natural-language UX & Traditional dynamic dashboard queries
+
+---
+
+## B. Predictive System High Level Architecture
+
+<img src="documents/Predication-Page-1.jpg" alt="Description" width="960"/>
+
+## C. Machine Learning Platform Low Level Architecture
+
+### C.1 Feature Engineering
+
+| Feature                    | Description                            |
+|----------------------------|----------------------------------------|
+| `product_id`               | Unique ID for product                  |
+| `seller_id`                | Seller who sold the product            |
+| `sale_price`               | Final transaction price                |
+| `original_price`           | Price before discount                  |
+| `is_holiday`               | Whether the sale happened on a holiday |
+| `is_weekend`               | Weekend indicator (Saturday/Sunday)    |
+| `day_of_week`              | Day of week (0–6)                      |
+| `day_of_month`             | Day of month (1–31)                    |
+| `month`                    | Month (1–12)                           |
+| `lag_1`, `lag_7`, `lag_30` | Aggregated past sales quantities       |
+
+### C.2 Candidate Models
+
+- **Tree-based models (XGBoost, LightGBM)**
+    - Good for structured, categorical + numeric data
+
+### C.3 Data Simulation
+
+📈 Quantity Simulation Logic
+
+`quantity` is a function of several features:
+
+| Feature                          | Effect on Quantity                                      |
+|----------------------------------|---------------------------------------------------------|
+| `sale_price` vs `original_price` | Greater discount → higher quantity (up to 20% discount) |
+| `is_holiday`                     | Boosts electronics and clothes sales                    |
+| `is_weekend`                     | Boosts food sales significantly                         |
+| `product_id`                     | Different base rates, all balanced                      |
+| `seller_id`                      | Large sellers have slightly higher volume               |
+| `day_of_week`                    | Captures weekday/weekend patterns                       |
+| `day_of_month` / `month`         | Reflect seasonal/monthly variations                     |
+
+[Simulation Requirment](./product-sale-prediction-AI/generate/sales_data_specification.md) / [generate_test_data.py](product-sale-prediction-AI/generate/generate_test_data.py)
+
+### C.4 Training & Tuning
+
+1. Data aggregation  (daily quantity per product per
+   seller)   [prepare_sales_train_data.py](product-sale-prediction-AI/train/prepare_sales_train_data.py)
+   other options:
+    - **Sales Aggregator** — Kafka + Spark-based data preprocessing pipeline
+    - **Batch ETL** — Periodic aggregation jobs using Airflow or similar tools
+    - **Data Lake** — Store raw logs in S3 or HDFS for future analysis
+2. Feature generation(lags, date features,
+   flags)   [prepare_sales_train_data.py](product-sale-prediction-AI/train/prepare_sales_train_data.py)
+3. Evaluation: Quantity Precision vs Real
+   data.  [evaludate_model.py](product-sale-prediction-AI/evaluate/evaludate_model.py)  
+   <img src="documents/Predication%20vs%20Real%20Data.png" alt="Description" width="600"/>
+
+### C.5 Evaluation Metrics
+
+- **MAE [evaludate_model.py](product-sale-prediction-AI/evaluate/evaludate_model.py) (Mean Absolute
+  Error)**
+- **RMSE (Root Mean Square Error)**
+- **Precision@N / Recall@N** for top-N product list  
+  <img src="documents/Model Evaluation.png" alt="Description" width="600"/>
+
+### C.6 Deployment & Integration
+
+- **API Endpoint:**
+  `POST /predict`  [doc](http://localhost:8000/docs#/default/predict_single_predict_post)
+- **Input JSON:**
+  ```json
+  {
+  "product_id": "p101",
+  "seller_id": "seller_2",
+  "sale_price": 899.99,
+  "original_price": 1099,
+  "is_holiday": 0,
+  "is_weekend": 1,
+  "day_of_week": 6,
+  "day_of_month": 15,
+  "month": 5,
+  "lag_1": 120,
+  "lag_7": 89,
+  "lag_30": 95
+  }
+  ```  
+- **Output JSON:**
+  ```json
+  {
+  "predicted_quantity": 593.7947998046875,
+  "status": "success"
+  }
+  ```  
+
+- **Machine Learning Deployment Options:**  
+  FastAPI [sales_prediction_api.py](product-sale-prediction-AI/sales_prediction_api.py), Spring Boot
+  or AWS SageMaker.
+
+      ![python_predication_api.png](documents/python_predication_api.png)
+
+---
+
+## C. Predication Backend Microservices(Orchestration and Integration)
+
+### C.1 Service Function
+
+- **Access control** — Check if seller able to access API resource, and seller can only access their
+  own products.
+- **Integrate Other Services**
+    - **Integrate Prediction Model Service** — Call `/predict` endpoint with product features
+    - **Seller Context Service** — Fetch seller metadata (e.g. seller_id, seller is selling which
+      products, etc.)
+    - **Product Details Service** — Fetch product descriptions, category, etc.
+    - **Sales History Service** — Retrieve historical sales data for feature generation
+- **Model Context Protocol** — Standardized API for model interactions, allowing easy swapping of
+- **Restful API** — Use RESTful endpoints for model predictions, allowing easy integration with  
+- **Caching**: **Cache recent queries & deduplicated predictions
+
+### C.2  Model Context Protocol
+Model-Centric Protocol (MCP) is a tool invocation interface provided for large language models (LLMs), enabling AI models to call various functions through a standardized protocol, such as product sales analysis and sales prediction.
+This API design follows a tool-centric approach, modularizing system functions into independently callable "tools", allowing large models to flexibly combine and call them based on requirements.
+
+---
+
+## D. Agent + LLM + MCP Integration
+
+### D.1 Chatbot Workflow
+
+User types:
+> “What’s my best-performing product next week in electronics?”
+
+Agent:
+
+- Fills in missing info (e.g. `seller_id`, `category`)
+- Calls `/mcp/sales/predict`
+- Returns conversational summary with top-N products and explanations
+
+### D.2 MCP Interfaces
+
+| Endpoint               | Description                        |
+|------------------------|------------------------------------|
+| `/mcp/sales/predict`   | Predict top-selling products       |
+| `/mcp/seller/context`  | Load seller metadata               |
+| `/mcp/product/details` | Load product descriptions & images |
+
+### D.3 Reflection and Orchestration
+
+- Use agent reflection for debugging failed calls
+- Natural error handling: "I couldn’t find recent sales, please connect your store."
+
+---
+
+## E. Senior Staff Engineer Interview Highlights
+
+### Q1: How do you handle cold-start products or sellers?
+
+- Use averages from category-level sales
+- Similarity-based inference (e.g. price range, brand, historical seller behavior)
+
+### Q2: How do you scale the system for peak sales periods (Black Friday)?
+
+- Precompute predictions for high-traffic sellers
+- Use CDN + Redis for popular queries
+- Auto-scale model containers
+
+### Q3: How do you detect concept drift in product demand?
+
+- Monitor feature distributions and MAE weekly
+- Trigger retraining pipeline when drift exceeds threshold
+
+### Q4: How to explain AI predictions to non-technical users?
+
+- Feature attribution (e.g., "high discount", "holiday spike")
+- Use SHAP plots + natural language summaries
+
+### Q5: How to ensure low-latency predictions at scale?
+
+- Warm up model on cold start
+- Use model inference servers with async support
+- Redis + TTL cache + idempotent requests
+
+---
+
+## F. Demo Components
+
+1. `product-sale-prediction-ML`: Simulated data, model training, deployment
+2. `product-sale-prediction-service`: REST/MCP backend with scalable APIs
+3. `quickbooks-sales-dashboard`: UI for filtering and visualizing predictions
+4. `ai_chat_bot`: LangChain + LLM assistant to query forecasts via chat
+5. Monitoring tools: Datadog / Prometheus for latency, QPS, and error tracking
+
+---
+
+## G. Cost Optimization & Performance
+
+- Cache top-N predictions (Redis, 5–15min TTL)
+- Batch retraining using low-cost spot instances
+- LLM agent calls throttled and chunked via RAG + truncation
+- Use historical grouping to reduce compute cost for low-traffic sellers
+
+---
+
+## H. Summary
+
+This system helps sellers make data-driven decisions by forecasting top-selling products in upcoming
+time windows. It combines:
+
+- Practical AI integration
+- Real-time, explainable outputs
+- Scalable microservices and chat interfaces
+- Monitoring and fallback strategies for robustness
+
+It is an excellent showcase of both engineering depth and AI product thinking — suitable for
+discussion in a Staff/Principal Engineer interview setting.
