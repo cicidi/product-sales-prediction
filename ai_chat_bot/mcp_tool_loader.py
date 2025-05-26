@@ -18,7 +18,7 @@ def get_tool_details(tool_name: str) -> Dict[str, Any]:
     """
     try:
         url = f"http://localhost:8080/api/mcp/tools/{tool_name}"
-        response = httpx.get(url)
+        response = httpx.get(url, timeout=10)
         
         if response.status_code != 200:
             logging.error(f"Failed to fetch tool details for {tool_name}: {response.status_code} - {response.text}")
@@ -108,7 +108,7 @@ def build_mcp_tool(tool_data: Dict[str, Any], tool_details: Dict[str, Any]) -> O
                         "parameters": {}
                     }
                     
-                    response = httpx.post(execute_url, json=payload)
+                    response = httpx.post(execute_url, json=payload, timeout=10)
                     
                     if response.status_code == 200:
                         result = response.json()
@@ -148,7 +148,7 @@ def build_mcp_tool(tool_data: Dict[str, Any], tool_details: Dict[str, Any]) -> O
                     "parameters": params
                 }
                 
-                response = httpx.post(execute_url, json=payload)
+                response = httpx.post(execute_url, json=payload, timeout=10)
                 
                 # Return formatted response
                 if response.status_code == 200:
@@ -203,7 +203,7 @@ def load_mcp_tools(swagger_url: str) -> List[Union[Tool, StructuredTool]]:
     """
     try:
         # Fetch the tools from the MCP API
-        response = httpx.get(swagger_url)
+        response = httpx.get(swagger_url, timeout=10)
         if response.status_code != 200:
             logging.error(f"Failed to fetch MCP tools: {response.status_code} - {response.text}")
             raise Exception(f"Failed to fetch MCP tools: {response.status_code}")
