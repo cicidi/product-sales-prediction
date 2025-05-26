@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Predications {
+
+  private String productId;
   private List<Predication> predicationList;
   private LocalDate startDate;
   private LocalDate endDate;

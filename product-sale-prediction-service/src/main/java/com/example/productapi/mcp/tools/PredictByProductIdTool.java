@@ -3,37 +3,33 @@ package com.example.productapi.mcp.tools;
 import com.example.productapi.mcp.model.ToolDefinition;
 import com.example.productapi.mcp.model.ToolResponse;
 import com.example.productapi.mcp.service.Tool;
-import com.example.productapi.model.Product;
 import com.example.productapi.model.Predications;
-import com.example.productapi.service.ProductService;
 import com.example.productapi.service.PredictionService;
-import com.example.productapi.util.TimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
-public class SalesPredictionTool implements Tool {
-    
+public class PredictByProductIdTool implements Tool {
+
     private final PredictionService predictionService;
-    private final ProductService productService;
     private final ToolDefinition definition;
-    
+
     @Autowired
-    public SalesPredictionTool(PredictionService predictionService,
-                              ProductService productService) {
+    public PredictByProductIdTool(PredictionService predictionService) {
         this.predictionService = predictionService;
-        this.productService = productService;
-        
-        // Build the tool definition based on the Swagger API
+
+        // Build the tool definition
         this.definition = ToolDefinition.builder()
-                .name("predict_product_sales")
-                .displayName("Sales Prediction")
-                .description("Predict future sales for a specific product")
-                .operationId("predict_product_sales")
+                .name("predict_by_product_id")
+                .displayName("Predict by Product ID")
+                .description("Predict future sales for a specific product by product ID.")
+                .operationId("predict_by_product_id")
                 .parameters(Arrays.asList(
                     ToolDefinition.ParameterDefinition.builder()
                         .name("product_id")
@@ -80,12 +76,12 @@ public class SalesPredictionTool implements Tool {
                 ))
                 .build();
     }
-    
+
     @Override
     public ToolDefinition getDefinition() {
         return definition;
     }
-    
+
     @Override
     public ToolResponse execute(Map<String, Object> parameters) {
         // Extract and validate required parameters
@@ -98,11 +94,11 @@ public class SalesPredictionTool implements Tool {
         if (!parameters.containsKey("start_date")) {
             return ToolResponse.error(getName(), "start_date is required");
         }
-        
+
         // Extract parameters
         String productId = parameters.get("product_id").toString();
         String sellerId = parameters.get("seller_id").toString();
-        
+
         // Parse sale price (optional)
         Double salePrice = null;
         if (parameters.containsKey("sale_price")) {
@@ -112,26 +108,25 @@ public class SalesPredictionTool implements Tool {
                 return ToolResponse.error(getName(), "Invalid sale_price format");
             }
         }
-        
+
         // Parse dates
         LocalDate startDate;
         LocalDate endDate = null;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         try {
             startDate = LocalDate.parse(parameters.get("start_date").toString(), formatter);
-                
+
             if (parameters.containsKey("end_date")) {
                 endDate = LocalDate.parse(parameters.get("end_date").toString(), formatter);
             }
         } catch (Exception e) {
             return ToolResponse.error(getName(), "Error parsing dates (expected format yyyy/MM/dd): " + e.getMessage());
         }
-        
+
         try {
-            // Make prediction using PredictionService
-            Predications predictions = predictionService.predictSales(
-                productId, sellerId, salePrice, startDate, endDate);
-            
+            // Call predictSalesByProductId
+            Predications predictions = predictionService.predictSalesByProductId(productId, sellerId, salePrice, startDate, endDate);
+
             // Build response
             Map<String, Object> response = new HashMap<>();
             response.put("product_id", productId);
@@ -139,7 +134,7 @@ public class SalesPredictionTool implements Tool {
             response.put("predictions", predictions);
             response.put("start_date", startDate.toString());
             response.put("end_date", endDate != null ? endDate.toString() : null);
-            
+
             return ToolResponse.success(getName(), response);
         } catch (Exception e) {
             return ToolResponse.error(getName(), "Error executing prediction: " + e.getMessage());
