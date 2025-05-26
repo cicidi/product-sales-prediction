@@ -1,6 +1,6 @@
 # Product Predictor Service
 
-An intelligent e-commerce prediction system built with Spring Boot, designed to be easily accessible via REST API and LLM tools through Model-Centric Protocol (MCP).
+An intelligent e-commerce prediction system built with Spring Boot, designed to be easily accessible via REST API and LLM tools through Model-Context Protocol (MCP).
 
 ## Features
 

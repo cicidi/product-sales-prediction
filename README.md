@@ -370,7 +370,7 @@ Swagger Doc http://localhost:8080/swagger-ui/index.html#
 
 ### D.2  Model Context Protocol
 
-Model-Centric Protocol (MCP) is a tool invocation interface provided for large language models (
+Model-Context Protocol (MCP) is a tool invocation interface provided for large language models (
 LLMs), enabling AI models to call various functions through a standardized protocol, such as product
 sales analysis and sales prediction.
 This API design follows a tool-centric approach, modularizing system functions into independently
