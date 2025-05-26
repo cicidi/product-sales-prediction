@@ -85,8 +85,8 @@ aws:
   sagemaker:
     endpoint-name: sales-predict-endpoint
   region: us-west-2
-  access-key: AKIASGXFHFEHB6SBIW6H
-  secret-key: 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
+  access-key:
+  secret-key:
 
 # Swagger/OpenAPI Configuration
 springdoc:
