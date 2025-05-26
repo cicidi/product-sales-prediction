@@ -16,7 +16,7 @@ def train_daily_sales_model():
   data = data.rename(columns={"date": "create_timestamp"})
 
   # Round to daily granularity
-  data["create_timestamp"] = data["create_timestamp"].dt.date  # 保留日期部分
+  data["create_timestamp"] = data["create_timestamp"].dt.date  # Retain date part
 
   # Add time features
   data["day_of_week"] = pd.to_datetime(data["create_timestamp"]).dt.dayofweek
@@ -89,19 +89,17 @@ def train_daily_sales_model():
 
 
 def convert_time():
-
-
-  # 读取 CSV 文件
+  # Read CSV file
   df = pd.read_csv("/home/cicidi/project/product-sales-prediction/product-sale-prediction-AI/data/sales_2023_2025_realistic.csv")
 
-  # 假设时间列名为 create_timestamp，你可以根据实际情况修改列名
+  # Assume the time column is named create_timestamp, you can modify the column name according to the actual situation
   timestamp_col = "create_timestamp"
 
-  # 转换时间格式
+  # Convert time format
   df[timestamp_col] = pd.to_datetime(df[timestamp_col], format="%Y/%m/%d %H:%M:%S")
   df[timestamp_col] = df[timestamp_col].dt.strftime("%Y-%m-%dT%H:%M:%S")
 
-  # 保存为新文件（避免覆盖）
+  # Save as a new file (to avoid overwriting)
   df.to_csv("/home/cicidi/project/product-sales-prediction/product-sale-prediction-AI/data/sales_2023_2025_realistic.csv", index=False)
 
 if __name__ == "__main__":

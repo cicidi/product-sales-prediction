@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-销量预测 REST API 服务
-使用 FastAPI + XGBoost PKL 模型
-Python 3.12 兼容
+Sales prediction REST API service
+Using FastAPI + XGBoost PKL model
+Python 3.12 compatible
 """
 
 from fastapi import FastAPI, HTTPException
@@ -16,18 +16,18 @@ import os
 import sys
 from datetime import datetime
 
-# 创建 FastAPI 应用
+# Create FastAPI application
 app = FastAPI(
     title="Sales predicate API",
     description=" XGBoost sales prediction API service",
     version="1.0.0"
 )
 
-# 全局模型变量
+# Global model variable
 model = None
 
 
-# 请求模型
+# Request model
 class PredictionRequest(BaseModel):
   product_id: str = Field(..., example="p101")
   seller_id: str = Field(..., example="seller_2")
@@ -81,12 +81,12 @@ def load_model():
 
 
 def predict_sales(data: pd.DataFrame) -> np.ndarray:
-  """执行预测"""
+  """Execute prediction"""
   if model is None:
-    raise HTTPException(status_code=500, detail="模型未加载")
+    raise HTTPException(status_code=500, detail="model not loaded")
 
   try:
-    # 确保特征顺序
+    # Ensure feature order
     features = [
       "product_id", "seller_id", "sale_price", "original_price",
       "is_holiday", "is_weekend", "day_of_week", "day_of_month",
@@ -101,18 +101,18 @@ def predict_sales(data: pd.DataFrame) -> np.ndarray:
     raise HTTPException(status_code=500, detail=f"predicate failure: {e}")
 
 
-# API 端点
+# API endpoints
 
 @app.on_event("startup")
 async def startup():
-  """启动时加载模型"""
+  """Load model on startup"""
   print("🚀 start predication API...")
   load_model()
 
 
 @app.get("/")
 async def root():
-  """根路径"""
+  """Root path"""
   return {
     "message": "predication API serivce",
     "version": "1.0.0",
@@ -137,7 +137,7 @@ async def health():
 async def predict_single(request: PredictionRequest):
   """single predication"""
   try:
-    # convert to DataFrame
+    # Convert to DataFrame
     data = pd.DataFrame([request.dict()])
 
     # run prediction
@@ -154,7 +154,7 @@ async def predict_single(request: PredictionRequest):
 async def predict_batch(request: BatchRequest):
   """batch predication"""
   try:
-    # 转换为DataFrame
+    # Convert to DataFrame
     data_list = [req.dict() for req in request.requests]
     data = pd.DataFrame(data_list)
 
