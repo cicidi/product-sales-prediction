@@ -23,44 +23,39 @@ GET /api/mcp/tools
   "status": "success",
   "data": [
     {
-      "name": "topSellingProducts",
-      "displayName": "Sales Ranking Analysis",
-      "description": "Analyze sales rankings for a specific seller within a given time period, supporting category filtering and querying top-selling products"
+      "name": "predict_by_category",
+      "displayName": "Predict by Category",
+      "description": "Predict future Top/Best N sell products within a specific category."
     },
     {
-      "name": "predictSales",
-      "displayName": "Sales Prediction",
-      "description": "Predict sales volume and revenue for specific products in future time periods, helping sellers make better inventory and marketing decisions"
+      "name": "predict_by_product_id",
+      "displayName": "Predict by Product ID",
+      "description": "Predict future sales for a specific product by product ID."
     },
     {
-      "name": "searchProducts",
-      "displayName": "Product Search",
-      "description": "Search products by keywords and/or categories"
-    },
-    {
-      "name": "searchSimilarProducts",
-      "displayName": "Similar Product Search",
-      "description": "Find similar products based on text description or product ID using vector similarity retrieval technology"
-    },
-    {
-      "name": "getRecentOrders",
+      "name": "list_orders",
       "displayName": "Order List Query",
-      "description": "Query recent order records for a specific seller, supporting pagination"
+      "description": "Query order records for a specific seller, supporting time range and pagination."
     },
     {
-      "name": "getProducts",
-      "displayName": "Product List Query",
-      "description": "Get product list, supporting filtering by category and seller ID"
+      "name": "list_products",
+      "displayName": "Product List",
+      "description": "List products with optional filtering by category and seller ID."
     },
     {
-      "name": "getProductById",
-      "displayName": "Product Detail Query",
-      "description": "Get detailed product information by product ID"
-    },
-    {
-      "name": "manageProduct",
+      "name": "manage_product",
       "displayName": "Product Management",
-      "description": "Create new products or update existing product information"
+      "description": "Create, update, or delete product information."
+    },
+    {
+      "name": "get_product_detail",
+      "displayName": "Product Detail",
+      "description": "Get detailed information about a specific product."
+    },
+    {
+      "name": "analyze_sales",
+      "displayName": "Sales Analytics",
+      "description": "Get daily product sales summary and total summary for a time range."
     }
   ],
   "toolName": "list_tools"
@@ -76,7 +71,7 @@ GET /api/mcp/tools/{toolName}
 
 Example:
 ```
-GET /api/mcp/tools/predictSales
+GET /api/mcp/tools/predict_by_category
 ```
 
 **Response**:
@@ -84,43 +79,52 @@ GET /api/mcp/tools/predictSales
 {
   "status": "success",
   "data": {
-    "name": "predictSales",
-    "displayName": "Sales Prediction",
-    "description": "Predict sales volume and revenue for specific products in future time periods, helping sellers make better inventory and marketing decisions",
+    "name": "predict_by_category",
+    "displayName": "Predict by Category",
+    "description": "Predict future Top/Best N sell products within a specific category.",
     "parameters": [
       {
-        "name": "productId",
+        "name": "category",
         "type": "string",
-        "description": "Product ID, required parameter, specifies the product for sales prediction",
+        "description": "Category, required parameter, specifies the category for sales prediction",
         "required": true,
-        "example": "P123456"
+        "example": "electronics"
       },
       {
-        "name": "sellerId",
+        "name": "seller_id",
         "type": "string",
-        "description": "Seller ID, required parameter, specifies the product owner",
+        "description": "Seller ID, required parameter, specifies the seller for sales prediction",
         "required": true,
-        "example": "SELLER789"
+        "example": "seller_1"
       },
       {
-        "name": "startTime",
-        "type": "string",
-        "description": "Prediction start time, format as year/month (e.g., 2025/06), optional parameter, defaults to 2025/06",
-        "required": false,
-        "example": "2025/06"
+        "name": "top_n",
+        "type": "integer",
+        "description": "Number of top products to predict (Required)",
+        "required": true,
+        "example": 10
       },
       {
-        "name": "endTime",
+        "name": "start_date",
         "type": "string",
-        "description": "Prediction end time, format as year/month (e.g., 2025/07), optional parameter, defaults to 2025/07",
+        "description": "Start date for prediction, format yyyy/MM/dd (e.g., 2025/06/01), required parameter",
+        "required": true,
+        "example": "2025/06/01"
+      },
+      {
+        "name": "end_date",
+        "type": "string",
+        "description": "End date for prediction, format yyyy/MM/dd (e.g., 2025/06/01), optional parameter, if not provided will only predict one day",
         "required": false,
-        "example": "2025/07"
+        "example": "2025/06/01"
       }
     ],
     "outputSchema": {
-      "prediction": "Predicted sales volume and revenue for each time period, organized by month",
-      "product": "Detailed product information",
-      "query": "Parameters used for prediction"
+      "predicationList": "List of daily predictions",
+      "startDate": "Prediction start date",
+      "endDate": "Prediction end date",
+      "totalQuantity": "Total predicted sales quantity",
+      "totalDays": "Total number of days predicted"
     }
   },
   "toolName": "tool_details"
@@ -135,12 +139,13 @@ POST /api/mcp/execute
 Content-Type: application/json
 
 {
-  "toolName": "predictSales",
+  "toolName": "predict_by_category",
   "parameters": {
-    "productId": "P123456",
-    "sellerId": "SELLER789",
-    "startTime": "2025/06",
-    "endTime": "2025/08"
+    "category": "electronics",
+    "seller_id": "seller_1",
+    "top_n": 10,
+    "start_date": "2025/06/01",
+    "end_date": "2025/06/01"
   }
 }
 ```
@@ -150,156 +155,157 @@ Content-Type: application/json
 {
   "status": "success",
   "data": {
-    "prediction": {
-      "2025/06": {
-        "quantity": 45,
-        "revenue": 4495.50
-      },
-      "2025/07": {
-        "quantity": 52,
-        "revenue": 5199.48
-      },
-      "2025/08": {
-        "quantity": 48,
-        "revenue": 4800.00
+    "predicationList": [
+      {
+        "date": "2025/06/01",
+        "productId": "p100",
+        "quantity": 50
       }
-    },
-    "product": {
-      "id": "P123456",
-      "name": "Wireless Bluetooth Headphones",
-      "category": "Electronics",
-      "brand": "AudioTech",
-      "price": 99.99,
-      "description": "High-quality wireless headphones with noise cancellation"
-    },
-    "query": {
-      "productId": "P123456",
-      "sellerId": "SELLER789",
-      "startTime": "2025/06",
-      "endTime": "2025/08"
-    }
+    ],
+    "startDate": "2025/06/01",
+    "endDate": "2025/06/01",
+    "totalQuantity": 50,
+    "totalDays": 1
   },
-  "toolName": "predictSales"
+  "toolName": "predict_by_category"
 }
 ```
 
 ## Available Tool Details
 
-### 1. Sales Ranking Analysis (topSellingProducts)
+### 1. Predict by Category (predict_by_category)
 
-Query sales rankings for a specific seller within a given time period, with optional category filtering.
+Predict future Top/Best N sell products within a specific category.
 
 **Parameters**:
-- `sellerId` (required): Seller ID
-- `startTime` (optional): Start time, format as "year/month", defaults to "2025/01"
-- `endTime` (optional): End time, format as "year/month", defaults to "2025/05"
-- `category` (optional): Product category filter
-- `topN` (optional): Number of rankings to return, defaults to 3
+- `category` (required): Category, specifies the category for sales prediction. Example: "electronics"
+- `seller_id` (required): Seller ID, specifies the seller for sales prediction. Example: "seller_1"
+- `top_n` (required): Number of top products to predict. Example: 10
+- `start_date` (required): Start date for prediction, format yyyy/MM/dd. Example: "2025/06/01"
+- `end_date` (optional): End date for prediction, format yyyy/MM/dd. If not provided, will only predict one day. Example: "2025/06/01"
 
 **Return Data**:
-- `products`: List of products by sales ranking, including sales volume and revenue metrics
-- `count`: Number of products returned
-- `query`: Query parameters used
+- `predicationList`: List of daily predictions
+- `startDate`: Prediction start date
+- `endDate`: Prediction end date
+- `totalQuantity`: Total predicted sales quantity
+- `totalDays`: Total number of days predicted
 
-### 2. Sales Prediction (predictSales)
+### 2. Predict by Product ID (predict_by_product_id)
 
-Predict sales volume for specific products in future time periods to help sellers make inventory and marketing decisions.
+Predict future sales for a specific product by product ID.
 
 **Parameters**:
-- `productId` (required): Product ID
-- `sellerId` (required): Seller ID
-- `startTime` (optional): Prediction start time, format as "year/month", defaults to "2025/06"
-- `endTime` (optional): Prediction end time, format as "year/month", defaults to "2025/07"
+- `product_id` (required): Product ID, specifies the product for sales prediction. Example: "p100"
+- `seller_id` (required): Seller ID, specifies the seller for sales prediction. Example: "seller_1"
+- `sale_price` (optional): Sale price, if not provided will use original price. Example: 99.99
+- `start_date` (required): Start date for prediction, format yyyy/MM/dd. Example: "2025/06/01"
+- `end_date` (optional): End date for prediction, format yyyy/MM/dd. If not provided, will only predict one day. Example: "2025/06/01"
 
 **Return Data**:
-- `prediction`: Predicted sales volume and revenue for each time period
-- `product`: Detailed product information
-- `query`: Parameters used for prediction
+- `predicationList`: List of daily predictions
+- `startDate`: Prediction start date
+- `endDate`: Prediction end date
+- `totalQuantity`: Total predicted sales quantity
+- `totalDays`: Total number of days predicted
 
-### 3. Product Search (searchProducts)
+### 3. Order List Query (list_orders)
 
-Search products by keywords and/or categories.
-
-**Parameters**:
-- `keyword` (optional): Search keyword
-- `category` (optional): Product category
-
-**Return Data**:
-- `results`: List of search result products
-- `count`: Number of results
-- `query`: Search parameters
-
-### 4. Similar Product Search (searchSimilarProducts)
-
-Find similar products based on text description or product ID using vector similarity retrieval technology.
+Query order records for a specific seller, supporting time range and pagination.
 
 **Parameters**:
-- `description` (optional): Product description text for finding similar products
-- `productId` (optional): Product ID for finding similar products
-- `limit` (optional): Limit on number of results to return, defaults to 3
-
-**Note**: At least one of `description` or `productId` parameters must be provided.
-
-**Return Data**:
-- `products`: List of similar products
-- `count`: Number of products returned
-
-### 5. Order List Query (getRecentOrders)
-
-Query recent order records for a specific seller, supporting pagination.
-
-**Parameters**:
-- `sellerId` (required): Seller ID for querying specific seller's orders
-- `page` (optional): Page number, starting from 0, defaults to 0 (first page)
-- `size` (optional): Records per page, defaults to 20, maximum 100
+- `seller_id` (required): Seller ID, sellers cannot view other sellers' orders. Example: "seller_1"
+- `start_time` (optional): Start time, format yyyy/MM/dd. Example: "2025/05/01"
+- `end_time` (optional): End time, format yyyy/MM/dd. Example: "2025/05/01"
+- `page` (optional): Page number, starting from 0. Example: 0
+- `size` (optional): Records per page, maximum 100. Example: 20
 
 **Return Data**:
 - `orders`: Order list
-- `currentPage`: Current page number
-- `totalItems`: Total number of records
-- `totalPages`: Total number of pages
+- `current_page`: Current page number
+- `total_items`: Total number of records
+- `total_pages`: Total number of pages
+- `start_time`: Query start time
+- `end_time`: Query end time
 
-### 6. Product List Query (getProducts)
+### 4. Product List (list_products)
 
-Get product list, supporting filtering by category and seller ID.
+List products with optional filtering by category and seller ID.
 
 **Parameters**:
-- `category` (optional): Product category for filtering products
-- `sellerId` (optional): Seller ID for filtering products
+- `category` (optional): Product category, used to filter products by category. Example: "electronics"
+- `seller_id` (optional): Seller ID, used to filter products by seller. Example: "seller_1"
+- `page` (optional): Page number, starting from 0. Example: 0
+- `size` (optional): Records per page, maximum 100. Example: 20
 
 **Return Data**:
 - `products`: Product list
-- `count`: Number of products
+- `total_count`: Total number of products
+- `current_page`: Current page number
+- `total_pages`: Total number of pages
 - `category`: Queried category (if provided)
-- `sellerId`: Queried seller ID (if provided)
+- `seller_id`: Queried seller ID (if provided)
 
-### 7. Product Detail Query (getProductById)
+### 5. Product Management (manage_product)
 
-Get detailed product information by product ID.
-
-**Parameters**:
-- `id` (required): Product ID for querying specific product details
-
-**Return Data**:
-- `product`: Detailed product information
-
-### 8. Product Management (manageProduct)
-
-Create new products or update existing product information.
+Create, update, or delete product information.
 
 **Parameters**:
-- `id` (required for updates): Product ID, required when updating products, not needed for creating new products
-- `name` (required for creation): Product name
-- `category` (required for creation): Product category
-- `brand` (required for creation): Product brand
-- `price` (required for creation): Product price
-- `description` (optional): Product description
-- `sellerId` (required for creation): Seller ID
+- `product_id` (required for updates): Product ID. Example: "p100"
+- `seller_id` (required for creation): Seller ID. Example: "seller_1"
+- `name` (required for creation): Product name. Example: "Wireless Bluetooth Earphones"
+- `category` (required for creation): Product category. Example: "Electronics"
+- `brand` (required for creation): Brand. Example: "Sony"
+- `price` (required for creation): Price. Example: 999.99
 
 **Return Data**:
-- `product`: Created or updated product information
-- `isNew`: Whether it's a newly created product
-- `message`: Operation result message
+- `product_id`: Product ID
+- `seller_id`: Seller ID
+- `name`: Product name
+- `category`: Product category
+- `brand`: Brand
+- `price`: Price
+- `created_at`: Creation time
+- `updated_at`: Update time
+
+### 6. Product Detail (get_product_detail)
+
+Get detailed information about a specific product.
+
+**Parameters**:
+- `product_id` (required): Product ID, used to query specific product details. Example: "p100"
+
+**Return Data**:
+- `product_id`: Product ID
+- `seller_id`: Seller ID
+- `name`: Product name
+- `category`: Product category
+- `brand`: Brand
+- `price`: Price
+- `created_at`: Creation time
+- `updated_at`: Update time
+
+### 7. Sales Analytics (analyze_sales)
+
+Get daily product sales summary and total summary for a time range.
+
+**Parameters**:
+- `seller_id` (optional): Seller ID to filter sales. Example: "seller_1"
+- `product_id` (optional): Product ID to filter sales. Example: "p100"
+- `start_time` (required): Start time, format yyyy/MM/dd. Example: "2025/05/01"
+- `end_time` (optional): End time, format yyyy/MM/dd. Example: "2025/05/01"
+- `category` (optional): Category to filter by. Example: "electronics"
+- `top_n` (optional): Number of top products to return. Example: 10
+
+**Return Data**:
+- `dailyProductSales`: List of daily product sales with productId, quantity, date, and revenue
+- `totalSummary`: List of total product sales summary with productId, quantity, date='total', and revenue
+- `startTime`: Start time of analysis period
+- `endTime`: End time of analysis period
+- `sellerId`: Seller ID if filtered
+- `productId`: Product ID if filtered
+- `category`: Category if filtered
+- `topN`: Top N filter if applied
 
 ## Integration Examples
 
@@ -319,12 +325,13 @@ print("Available tools:", json.dumps(tools, indent=2, ensure_ascii=False))
 
 # 2. Execute sales prediction tool
 prediction_request = {
-    "toolName": "predictSales",
+    "toolName": "predict_by_category",
     "parameters": {
-        "productId": "P123456",
-        "sellerId": "SELLER789",
-        "startTime": "2025/06",
-        "endTime": "2025/08"
+        "category": "electronics",
+        "seller_id": "seller_1",
+        "top_n": 10,
+        "start_date": "2025/06/01",
+        "end_date": "2025/06/01"
     }
 }
 
@@ -347,9 +354,9 @@ print("Similar products:", json.dumps(result, indent=2, ensure_ascii=False))
 
 # 4. Get product details
 product_detail_request = {
-    "toolName": "getProductById",
+    "toolName": "get_product_detail",
     "parameters": {
-        "id": "P123456"
+        "product_id": "p100"
     }
 }
 
@@ -359,14 +366,14 @@ print("Product details:", json.dumps(result, indent=2, ensure_ascii=False))
 
 # 5. Create new product
 create_product_request = {
-    "toolName": "manageProduct",
+    "toolName": "manage_product",
     "parameters": {
         "name": "Next-Gen Smart Watch",
         "category": "Wearables",
         "brand": "TechWear",
         "price": 299.99,
         "description": "Smart watch with health monitoring features and 7-day battery life",
-        "sellerId": "SELLER789"
+        "seller_id": "seller_1"
     }
 }
 
@@ -394,7 +401,7 @@ async function getTopSellingProducts() {
   const request = {
     toolName: 'topSellingProducts',
     parameters: {
-      sellerId: 'SELLER789',
+      sellerId: 'seller_1',
       startTime: '2025/01',
       endTime: '2025/05',
       category: 'Electronics',
@@ -420,7 +427,7 @@ async function getSellerOrders() {
   const request = {
     toolName: 'getRecentOrders',
     parameters: {
-      sellerId: 'SELLER789',
+      sellerId: 'seller_1',
       page: 0,
       size: 10
     }
@@ -466,7 +473,7 @@ async function updateProduct() {
   const request = {
     toolName: 'manageProduct',
     parameters: {
-      id: 'P123456',
+      id: 'p100',
       price: 89.99,
       description: 'Upgraded wireless Bluetooth headphones with active noise cancellation and extended battery life'
     }

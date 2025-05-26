@@ -119,7 +119,7 @@ and time window?”** in QuickBooks Commerce.
 ### C.6 Deployment & Integration
 
 - **API Endpoint:**
-  `POST /predict`  [doc](http://localhost:8000/docs#/default/predict_single_predict_post)
+  `POST /predict` [doc] (http://localhost:8000/docs#/default/predict_single_predict_post)
 - **Input JSON:**
   ```json
   {
@@ -166,91 +166,161 @@ and time window?”** in QuickBooks Commerce.
     - **Product Details Service** — Fetch product descriptions, category, etc.
     - **Sales History Service** — Retrieve historical sales data for feature generation
 - **Model Context Protocol** — Standardized API for model interactions, allowing easy swapping of
-- **Restful API** — Use RESTful endpoints for model predictions, allowing easy integration with  
+- **Restful API** — Use RESTful endpoints for model predictions, allowing easy integration with
 - **Caching**: **Cache recent queries & deduplicated predictions
 
+### C.2 RESTful API Design
+
+Swagger Doc http://localhost:8080/swagger-ui/index.html#
+
+| name             | Endpoint           | Description                                                                                                                                                                      |
+|------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Products API`   | /products /product | Product management endpoints.  list product, search prodcut by productid and/or category and/or seler_id                                                                         |
+| `Orders API`     | /orders?sellerId=  | Retrieve orders with optional filters for seller ID, product ID, category, date range. Results are sorted by timestamp in descending order. Default returns last 30 days orders. |
+| `Predicate API`  | /salles/predicate  | Predict future sales for a specific product using historical data and ML model                                                                                                   |
+| `Analystics API` | /sales/analystics  | Get daily product sales summary and total summary for a time range. If topN is provided, returns only top N products by total sales.                                             |
+
 ### C.2  Model Context Protocol
-Model-Centric Protocol (MCP) is a tool invocation interface provided for large language models (LLMs), enabling AI models to call various functions through a standardized protocol, such as product sales analysis and sales prediction.
-This API design follows a tool-centric approach, modularizing system functions into independently callable "tools", allowing large models to flexibly combine and call them based on requirements.
+
+Model-Centric Protocol (MCP) is a tool invocation interface provided for large language models (
+LLMs), enabling AI models to call various functions through a standardized protocol, such as product
+sales analysis and sales prediction.
+This API design follows a tool-centric approach, modularizing system functions into independently
+callable "tools", allowing large models to flexibly combine and call them based on requirements.
+[mcp-docs.md](product-sale-prediction-service/src/main/resources/static/mcp-docs.md)
+
+| Endpoint                | Description                                                                      |
+|-------------------------|----------------------------------------------------------------------------------|
+| `predict_by_category`   | Predict future Top/Best N sell products within a specific category.              |
+| `predict_by_product_id` | Predict future sales for a specific product by product ID.                       |
+| `list_orders`           | Query order records for a specific seller, supporting time range and pagination. |
+| `list_products`         | List products with optional filtering by category and seller ID..                |
+| `manage_product`        | Get detailed information about a specific product.                               |
+| `analyze_sales`         | Get daily product sales summary and total summary for a time range.              |
+
+Sample Question Supported:
+
+``` 
+- List all orders for seller_3 in the last month.
+- Predict seller_1's future sales for product p100 in next 10 days.
+- What are the details of product ID p101?
+- Predict the seller 2 's top 3 selling electronics next week.
+- List all products for seller_5.
+- Update the price of product ID p300 to 135.0.
+- What is the total revenue for seller_3 in the last quarter?
+- How many units of product ID p200 were sold by seller_1 last month?
+- What are the top 5 best-selling products this year?
+- What is the average order value for seller_4?
+```
 
 ---
 
 ## D. Agent + LLM + MCP Integration
+
+LLM agents can be used to provide a natural language interface for querying product sales
+predictions.
+Functionalities include:
+
+- **Natural Language Understanding**: Parse user queries to identify intent and parameters
+- **Tool Invocation**: Call appropriate MCP endpoints based on parsed intent
+- **Context Management**: Maintain conversation state and context for follow-up questions
+- **Error Handling**: Gracefully handle invalid inputs or API errors
+- **Response Generation**: Format API responses into natural language summaries
 
 ### D.1 Chatbot Workflow
 
 User types:
 > “What’s my best-performing product next week in electronics?”
 
-Agent:
+Agent thinking Steps:
 
-- Fills in missing info (e.g. `seller_id`, `category`)
-- Calls `/mcp/sales/predict`
-- Returns conversational summary with top-N products and explanations
+1. What is the Question ask me to do? -> predict_by_category
+2. What is the input? -> { "seller_id": "seller_1", "category": "electronics", "time_range": "next
+   week", "top_n": 5 }
+3. "Next Week" is not validate input -> "What is the time range?
+4. Call "convert_time_range" tool to convert "next week" to a valid time range.
+5. Seller ID and category are not provided -> ask user "What is your seller"
+6. Fills in missing info (e.g. `seller_id`, `category`)
+7. Calls `/mcp/sales/predict`
+8. Returns conversational summary with top-N products and explanations
+9. If user next more details on product, call `/mcp/sales/manage_product` to get product details
 
-### D.2 MCP Interfaces
+### D.2 LLM API usage
 
-| Endpoint               | Description                        |
-|------------------------|------------------------------------|
-| `/mcp/sales/predict`   | Predict top-selling products       |
-| `/mcp/seller/context`  | Load seller metadata               |
-| `/mcp/product/details` | Load product descriptions & images |
+As LLM as high cost and long latency, we need a monitoring to track the usage and performance of LLM
+API calls.
+By learning from the usage patterns, we can optimize the LLM calls to reduce cost and improve
+performance in the following ways:
 
-### D.3 Reflection and Orchestration
+- **Rate Limiting**: Throttle LLM calls to avoid overuse
+- **Chunking**: Understand and Break down large queries into smaller parts to reduce token usage
+- **Caching**: Cache common queries and responses to reduce redundant LLM calls
 
-- Use agent reflection for debugging failed calls
-- Natural error handling: "I couldn’t find recent sales, please connect your store."
+https://smith.langchain.com/o/ae357598-8cdb-481a-96a8-c2db51f867d5/dashboards/projects/f59f2388-4243-4c1f-9cc8-a6c345592242
+![langsmith2.png](documents/langsmith2.png)
+![langsmith.png](documents/langsmith.png)
 
----
+## E. Web UI and Dashboard
 
-## E. Senior Staff Engineer Interview Highlights
+Even we have a chatbot interface, we still need a web UI to provide a more visual and interactive.
+dashboard for sellers to view and filter predictions.
 
-### Q1: How do you handle cold-start products or sellers?
+http://localhost:4200/dashboard
+![dashboard.png](documents/dashboard.png)
 
-- Use averages from category-level sales
-- Similarity-based inference (e.g. price range, brand, historical seller behavior)
+## F. Identity and Access Management (not implemented yet)
 
-### Q2: How do you scale the system for peak sales periods (Black Friday)?
+To ensure secure access to the prediction APIs, we need implement an Identity and Access
+Management (IAM)
 
-- Precompute predictions for high-traffic sellers
-- Use CDN + Redis for popular queries
-- Auto-scale model containers
+- **Roles and Permissions**: system to control who can access which resources.
+- **ClientID** and **ClientSecret**: are used to authenticate the client application, and return *
+  *AccessToken**
+- **AccessToken**: is a temporary JWT token that contains the user's identity and permissions.
 
-### Q3: How do you detect concept drift in product demand?
+## F. Cost Optimization / Performance & Latency / Accuracy
 
-- Monitor feature distributions and MAE weekly
-- Trigger retraining pipeline when drift exceeds threshold
+- LLM agent Cost and performance Optimization
+    - User Rag to store and retrieve common queries
+    - User Rag to store and retrieve chat history and context , currently use entire chat history,
+      but can
+      be optimized to only store the last 10 messages.
+    - Different model for different user, e.g. use a smaller model for low-traffic sellers. or
+      smaller model for convert time range.
+    - Use open-source LLMs (e.g. Llama 2, Falcon) for cost-sensitive applications
+    - User prompt engineering to reduce token usage, reject irrelevant queries, and avoid
+      unnecessary LLM calls, reply message in short and concise.
 
-### Q4: How to explain AI predictions to non-technical users?
+- Web Service Cost/Latency Optimization
+    - Dynamic scaling of microservices based on traffic
+    - User Caching.
 
-- Feature attribution (e.g., "high discount", "holiday spike")
-- Use SHAP plots + natural language summaries
+- Database Cost/Latency Optimization
+    - Use Redis for caching frequently accessed data (e.g. product details, seller metadata)
+    - Use database indexing for faster query performance
+    - Use partitioning to scale database horizontally
+    - Use read replicas to distribute read traffic
+- Machine Learning Model accuracy
+    - Use XGBoost or LightGBM for structured data
+    - Use feature engineering to improve model performance
+    - Use hyperparameter tuning to optimize model performance
+    - Use cross-validation to evaluate model performance
+    - Use SHAP values to explain model predictions
+    - Early Stopping
+    - Online Learning / Active Learning
 
-### Q5: How to ensure low-latency predictions at scale?
 
-- Warm up model on cold start
-- Use model inference servers with async support
-- Redis + TTL cache + idempotent requests
-
----
-
-## F. Demo Components
-
-1. `product-sale-prediction-ML`: Simulated data, model training, deployment
-2. `product-sale-prediction-service`: REST/MCP backend with scalable APIs
-3. `quickbooks-sales-dashboard`: UI for filtering and visualizing predictions
-4. `ai_chat_bot`: LangChain + LLM assistant to query forecasts via chat
-5. Monitoring tools: Datadog / Prometheus for latency, QPS, and error tracking
-
----
-
-## G. Cost Optimization & Performance
-
-- Cache top-N predictions (Redis, 5–15min TTL)
-- Batch retraining using low-cost spot instances
-- LLM agent calls throttled and chunked via RAG + truncation
 - Use historical grouping to reduce compute cost for low-traffic sellers
 
+## F. Tech Stack
+
+1. `product-sale-prediction-ML`: Simulated data, XGBoost model training, deployment
+2. `product-sale-prediction-service`: SpringBoot + Postgres + REST/MCP backend with scalable APIs
+3. `quickbooks-sales-dashboard`: Angular app for filtering and visualizing predictions
+4. `ai_chat_bot`: LangChain + MCP + LangSmith + Streamlit to query forecasts via chat
+5. `Monitoring tools`: Datadog / Prometheus for latency, Langsmith.
+
+---
 ---
 
 ## H. Summary
@@ -262,6 +332,3 @@ time windows. It combines:
 - Real-time, explainable outputs
 - Scalable microservices and chat interfaces
 - Monitoring and fallback strategies for robustness
-
-It is an excellent showcase of both engineering depth and AI product thinking — suitable for
-discussion in a Staff/Principal Engineer interview setting.
