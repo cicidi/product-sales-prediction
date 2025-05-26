@@ -106,9 +106,9 @@ Out of Scope: The overarching QuickBooks Commerce platform and any unrelated fea
 
 ---
 
-## B. QuickBooks Commerce predication System High Level Architecture
+## B. QuickBooks Commerce Predication Platform High Level Design.
 
-### B.1 System Components
+### B.1 High Level Architecture
 
 <img src="documents/Predication-Page-1.jpg" alt="Description" width="960"/>
 
