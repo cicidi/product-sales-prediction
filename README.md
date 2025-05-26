@@ -415,6 +415,8 @@ Functionalities include:
 - **Error Handling**: Gracefully handle invalid inputs or API errors
 - **Response Generation**: Format API responses into natural language summaries
 
+![ai_chat_bot.png](documents/ai_chat_bot.png)
+<br>
 ### E.1 Chatbot Workflow
 
 User types:
