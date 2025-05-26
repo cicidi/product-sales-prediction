@@ -429,11 +429,13 @@ Agent thinking Steps:
    week", "top_n": 5 }
 3. "Next Week" is not validate input -> "What is the time range?"
 4. Call "convert_time_range" tool to convert "next week" to a valid time range.
-5. Seller ID and category are not provided -> ask user "What is your seller"
-6. Fills in missing info (e.g. `seller_id`, `category`)
-7. Calls `/mcp/sales/predict`
-8. Returns conversational summary with top-N products and explanations
-9. If user next more details on product, call `/mcp/sales/manage_product` to get product details
+5. Seller ID and category are not provided -> ask user "What is your seller" -> User reply "seller_1"
+   -> fill in seller_id
+6. What do you want to do with "seller_1" ? let me check history. 
+7. History found, "What's my best-performing product next week in electronics + seller_1 + start/end time". Fills in missing info (e.g. `seller_id`, `category`)
+8. Calls `/mcp/sales/predict`
+9. Returns conversational summary with top-N products and explanations
+10. If user next more details on product, call `/mcp/sales/manage_product` to get product details
 
 ### E.2 LLM API usage
 
