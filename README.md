@@ -1,13 +1,69 @@
+# Table of Contents
+
+- [Product Sales Prediction System Design](#product-sales-prediction-system-design)
+    - [A. Requirements Definition](#a-requirements-definition)
+        - [Introduction](#introduction)
+        - [Problem Statement](#problem-statement)
+        - [Scope of the Problem](#scope-of-the-problem)
+        - [High-Level Requirements](#high-level-requirements)
+        - [Goals Breakdown](#goals-breakdown)
+    - [B. QuickBooks Commerce predication System High Level Architecture](#b-quickbooks-commerce-predication-system-high-level-architecture)
+        - [System Components](#system-components)
+        - [Data Models](#data-models)
+        - [Database Choices](#database-choices)
+        - [Tech Stack choices and services](#tech-stack-choices-and-services)
+    - [C. Machine Learning Platform Low Level Architecture](#c-machine-learning-platform-low-level-architecture)
+        - [Feature Engineering](#feature-engineering)
+        - [Candidate Models](#candidate-models)
+        - [Data Simulation](#data-simulation)
+        - [Training & Tuning](#training--tuning)
+        - [Evaluation Metrics](#evaluation-metrics)
+        - [Deployment & Integration](#deployment--integration)
+    - [D. Predication Backend Microservices](#d-predication-backend-microservices)
+        - [Service Function](#service-function)
+        - [RESTful API Design](#restful-api-design)
+        - [Model Context Protocol](#model-context-protocol)
+    - [E. Agent + LLM + MCP Integration](#e-agent--llm--mcp-integration)
+        - [Chatbot Workflow](#chatbot-workflow)
+        - [LLM API usage](#llm-api-usage)
+    - [F. Web UI and Dashboard](#f-web-ui-and-dashboard)
+    - [G. Identity and Access Management](#g-identity-and-access-management)
+    - [H. Cost Optimization / Performance & Latency / Accuracy](#h-cost-optimization--performance--latency--accuracy)
+    - [I. Summary](#j-summary)
+
 # Product Sales Prediction System Design
 
 ---
 
 ## A. Requirements Definition
 
+### ✅ Introduction
+
+Designing a QuickBooks Commerce System for Top Sales by Category   
+In this system design interview, we will focus on designing a feature for QuickBooks Commerce that
+allows customers to easily determine their top sales by category. This feature is crucial for
+businesses to understand which areas of their operations are most profitable or popular. By doing
+so, businesses can make informed decisions on inventory management, pricing strategies, and
+marketing efforts.   
+Problem Statement   
+QuickBooks Commerce users need an efficient way to forecast their top-selling products and amounts
+across different categories. This feature should help users to better prepare and adjust their
+business strategies accordingly.
+Goal: Design a system that predicts the top sales by category for QuickBooks Commerce customers in
+various time periods.
+Scope of the Problem   
+For the purpose of this interview, we will limit the scope of our design to the following:   
+Service predicts the top sales by category over different selectable time frames, such as week,
+month, or year.   
+User views the top sales by category through a user-friendly interface.   
+Service ensures high availability, accuracy and consistency.   
+Out of Scope: The overarching QuickBooks Commerce platform and any unrelated features.
+
 ### ✅ Problem Statement
 
-Design a system to predict **“What will be the top-selling products by category for a given seller
-and time window?”** in QuickBooks Commerce.
+- QuickBooks Commerce users need an efficient way to forecast their top-selling products and amounts
+  across different categories.
+- This feature should help users to better prepare and adjust their business strategies accordingly.
 
 ### ✅ High-Level Requirements
 
@@ -29,7 +85,7 @@ and time window?”** in QuickBooks Commerce.
     - Ranked list of predicted top-selling products with estimated quantities
 
 - **User Scenario:**  
-  A seller wants to know what products will perform best next week in “Electronics” category. They
+  A seller wants to know what products will perform best next week in "Electronics" category. They
   log into QuickBooks, input category and time range, and get predictions to support marketing
   decisions.
 
@@ -50,9 +106,141 @@ and time window?”** in QuickBooks Commerce.
 
 ---
 
-## B. Predictive System High Level Architecture
+## B. QuickBooks Commerce predication System High Level Architecture
+
+### B.1 System Components
 
 <img src="documents/Predication-Page-1.jpg" alt="Description" width="960"/>
+
+### B.2 Data Models
+
+```java
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "orders")
+public class Order {
+
+  @Id
+  private String orderId;
+
+  private String productId;
+  private String buyerId;
+  private String sellerId;
+
+  private Double unitPrice;
+  private Integer quantity;
+  Low Level
+  Architecture
+/**
+ * @author cicidi on 5/23/25
+ */
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+
+  public class Predications {
+
+    private String productId;
+    private List<Predication> predicationList;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private int totalQuantity;
+    private int totalDays;
+  }
+
+```
+
+```java
+package com.example.productapi.model;
+
+import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * @author cicidi on 5/23/25
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Predication {
+
+  private LocalDate date;
+  private int quantity;
+}
+
+```
+
+```java
+package com.example.productapi.model;
+
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Transient;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "product")
+public class Product {
+
+  @Id
+  private String id;
+
+  private String name;
+  private String category;
+  private String brand;
+  private Double price;
+
+  @Column(name = "create_timestamp")
+  private LocalDateTime createTimestamp;
+
+  @Column
+  private String description;
+}
+```
+
+## B.3 Database Choices
+
+Here is the database choices for different types user case
+
+| Characteristic     | SQL DB                                             | Vector DB Cache                                              | NoSQL DB Cache                                                             | Redis Cache                                           |
+|--------------------|----------------------------------------------------|--------------------------------------------------------------|----------------------------------------------------------------------------|-------------------------------------------------------|
+| **Data Model**     | Relational tables of request keys + resultst       | High‑dimensional vectors with metadata                       | Key‑value or JSON document store                                           | Key Value Store                                       |
+| **Latency**        | Very low (< 1 ms)                                  | Low‑medium (~ 2–5 ms)                                        | Very low (< 1 ms)                                                          | Very low (< 1 ms)                                     |
+| **Scalability**    | Moderate; requires sharding/partitioning           | High; built for horizontal scaling of vector shards          | High; built‑in sharding & replication                                      | High; built‑in sharding & replicatio                  |
+| **Consistency**    | Strong ACID                                        | Eventual consistency                                         | Configurable (strong or eventual)                                          | Eventual or strong (via Redis config)                 |
+| **Storage & Cost** | Medium (only hot rows cached)                      | High (vector indexes + metadata)                             | Low (simple key‑value storage)                                             | Very low (in-memory, volatile unless persisted)       | 
+| **Best Use Case**  | Store Production Orders, Product relational data   | Fuzz Search for similar product and Cache LLM Query Response | Ready only Order history, and Prepared Training data. <br/> Large data set | Real-time session, token, feature cache , idempotency |
+| **Limitations**    | No semantic lookup; large tables can degrade perf. | Complex index maintenance; higher write/storage cost         | No built‑in approximate search                                             | Volatile by default; persistence optional             |
+
+## B.4 Tech Stack choices and services
+
+1. `product-sale-prediction-AI`: Simulated data, XGBoost model training, deployment
+2. `product-sale-prediction-service`: SpringBoot + Postgres + REST/MCP backend with scalable APIs
+3. `quickbooks-sales-dashboard`: Angular app for filtering and visualizing predictions
+4. `ai_chat_bot`: LangChain + MCP + LangSmith + Streamlit to query forecasts via chat
+5. `Monitoring tools`: Datadog / Prometheus for latency, Langsmith.
 
 ## C. Machine Learning Platform Low Level Architecture
 
@@ -153,9 +341,9 @@ and time window?”** in QuickBooks Commerce.
 
 ---
 
-## C. Predication Backend Microservices(Orchestration and Integration)
+## D. Predication Backend Microservices(Orchestration and Integration) Low Level Architecture
 
-### C.1 Service Function
+### D.1 Service Function
 
 - **Access control** — Check if seller able to access API resource, and seller can only access their
   own products.
@@ -169,7 +357,7 @@ and time window?”** in QuickBooks Commerce.
 - **Restful API** — Use RESTful endpoints for model predictions, allowing easy integration with
 - **Caching**: **Cache recent queries & deduplicated predictions
 
-### C.2 RESTful API Design
+### D.2 RESTful API Design
 
 Swagger Doc http://localhost:8080/swagger-ui/index.html#
 
@@ -180,7 +368,7 @@ Swagger Doc http://localhost:8080/swagger-ui/index.html#
 | `Predicate API`  | /salles/predicate  | Predict future sales for a specific product using historical data and ML model                                                                                                   |
 | `Analystics API` | /sales/analystics  | Get daily product sales summary and total summary for a time range. If topN is provided, returns only top N products by total sales.                                             |
 
-### C.2  Model Context Protocol
+### D.2  Model Context Protocol
 
 Model-Centric Protocol (MCP) is a tool invocation interface provided for large language models (
 LLMs), enabling AI models to call various functions through a standardized protocol, such as product
@@ -215,7 +403,7 @@ Sample Question Supported:
 
 ---
 
-## D. Agent + LLM + MCP Integration
+## E. Agent + LLM + MCP Integration
 
 LLM agents can be used to provide a natural language interface for querying product sales
 predictions.
@@ -227,17 +415,17 @@ Functionalities include:
 - **Error Handling**: Gracefully handle invalid inputs or API errors
 - **Response Generation**: Format API responses into natural language summaries
 
-### D.1 Chatbot Workflow
+### E.1 Chatbot Workflow
 
 User types:
-> “What’s my best-performing product next week in electronics?”
+> "What's my best-performing product next week in electronics?"
 
 Agent thinking Steps:
 
 1. What is the Question ask me to do? -> predict_by_category
 2. What is the input? -> { "seller_id": "seller_1", "category": "electronics", "time_range": "next
    week", "top_n": 5 }
-3. "Next Week" is not validate input -> "What is the time range?
+3. "Next Week" is not validate input -> "What is the time range?"
 4. Call "convert_time_range" tool to convert "next week" to a valid time range.
 5. Seller ID and category are not provided -> ask user "What is your seller"
 6. Fills in missing info (e.g. `seller_id`, `category`)
@@ -245,7 +433,7 @@ Agent thinking Steps:
 8. Returns conversational summary with top-N products and explanations
 9. If user next more details on product, call `/mcp/sales/manage_product` to get product details
 
-### D.2 LLM API usage
+### E.2 LLM API usage
 
 As LLM as high cost and long latency, we need a monitoring to track the usage and performance of LLM
 API calls.
@@ -260,7 +448,7 @@ https://smith.langchain.com/o/ae357598-8cdb-481a-96a8-c2db51f867d5/dashboards/pr
 ![langsmith2.png](documents/langsmith2.png)
 ![langsmith.png](documents/langsmith.png)
 
-## E. Web UI and Dashboard
+## F. Web UI and Dashboard
 
 Even we have a chatbot interface, we still need a web UI to provide a more visual and interactive.
 dashboard for sellers to view and filter predictions.
@@ -268,7 +456,7 @@ dashboard for sellers to view and filter predictions.
 http://localhost:4200/dashboard
 ![dashboard.png](documents/dashboard.png)
 
-## F. Identity and Access Management (not implemented yet)
+## G. Identity and Access Management (not implemented yet)
 
 To ensure secure access to the prediction APIs, we need implement an Identity and Access
 Management (IAM)
@@ -278,7 +466,7 @@ Management (IAM)
   *AccessToken**
 - **AccessToken**: is a temporary JWT token that contains the user's identity and permissions.
 
-## F. Cost Optimization / Performance & Latency / Accuracy
+## H. Cost Optimization / Performance & Latency / Accuracy
 
 - LLM agent Cost and performance Optimization
     - User Rag to store and retrieve common queries
@@ -309,26 +497,25 @@ Management (IAM)
     - Early Stopping
     - Online Learning / Active Learning
 
-
 - Use historical grouping to reduce compute cost for low-traffic sellers
-
-## F. Tech Stack
-
-1. `product-sale-prediction-ML`: Simulated data, XGBoost model training, deployment
-2. `product-sale-prediction-service`: SpringBoot + Postgres + REST/MCP backend with scalable APIs
-3. `quickbooks-sales-dashboard`: Angular app for filtering and visualizing predictions
-4. `ai_chat_bot`: LangChain + MCP + LangSmith + Streamlit to query forecasts via chat
-5. `Monitoring tools`: Datadog / Prometheus for latency, Langsmith.
-
----
 ---
 
-## H. Summary
+## J. Summary
 
-This system helps sellers make data-driven decisions by forecasting top-selling products in upcoming
-time windows. It combines:
+In this project, I have designed and implemented a product sales prediction system for QuickBooks
+Commerce. all requirements are met, including:
 
-- Practical AI integration
+- Practical AI integration.
 - Real-time, explainable outputs
 - Scalable microservices and chat interfaces
 - Monitoring and fallback strategies for robustness
+
+I have been working very hard on this project, building 4 projects, 27k lines of code by myself, in one
+week.
+
+- Used: Java, Python, Angular, Machining Learning, LLM.
+- Added: 18829 Deleted: 8637 Total Changed: 27466
+
+```shell
+ git log --pretty=tformat: --numstat | grep -E '\.(java|ts|py|md)$' | awk '{ added += $1; deleted += $2 } END { print "Added:", added, "Deleted:", deleted, "Total Changed:", added + deleted }'
+```
