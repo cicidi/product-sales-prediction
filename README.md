@@ -484,14 +484,14 @@ User: What's my best-performing product next week in electronics?...
    convert "next week" to start and end time.
 ```text
 Invoking: `resolve_time_range` with `{'prompt': 'next week'}`
-{'start_time': '2025-06-05', 'end_time': '2025-06-05'}
+{'start_time': '2025/06/02', 'end_time': '2025/06/08'}
 ```
 6. After having all the context, Agent will call `/mcp/sales/predict` with the following parameters:
    - `category`: "electronics"
    - `seller_id`: "seller_1"
    - `top_n`: 1
-   - `start_date`: "2025-06-05"
-   - `end_date`: "2025-06-05"
+   - `start_date`: "2025-06-02"
+   - `end_date`: "2025-06-08"
 
 ```text
 Invoking: `predict_top_N_sale_by_category` with `{'category': 
@@ -499,61 +499,132 @@ Invoking: `predict_top_N_sale_by_category` with `{'category':
 ```
 response from MCP server.
 ```json
-{
-  "status": "success",
+{  "status": "success",
   "data": {
-    "end_date": "2025-06-05",
+    "end_date": "2025-06-08",
     "category": "electronics",
     "seller_id": "seller_1",
     "predictions": [
       {
-        "productId": "p101",
+        "productId": "p201",
         "predicationList": [
+          {
+            "date": [
+              2025,
+              6,
+              2
+            ],
+            "quantity": 555
+          },
+          {
+            "date": [
+              2025,
+              6,
+              3
+            ],
+            "quantity": 552
+          },
+          {
+            "date": [
+              2025,
+              6,
+              4
+            ],
+            "quantity": 557
+          },
           {
             "date": [
               2025,
               6,
               5
             ],
-            "quantity": 566
+            "quantity": 555
+          },
+          {
+            "date": [
+              2025,
+              6,
+              6
+            ],
+            "quantity": 586
+          },
+          {
+            "date": [
+              2025,
+              6,
+              7
+            ],
+            "quantity": 590
+          },
+          {
+            "date": [
+              2025,
+              6,
+              8
+            ],
+            "quantity": 588
           }
         ],
         "startDate": [
           2025,
           6,
-          5
+          2
         ],
         "endDate": [
           2025,
           6,
-          5
+          8
         ],
-        "totalQuantity": 566,
-        "totalDays": 1
+        "totalQuantity": 3983,
+        "totalDays": 7
       }
     ],
-    "start_date": "2025-06-05"
+    "start_date": "2025-06-02"
   },
   "error": null,
   "toolName": "predict_by_category"
+}
 
 ```
 7. Since user ask for product details, Agent will call `/mcp/sales/manage_product` to get product
    details.
 ```text
-Invoking: `get_product_detail` with `{'product_id': 'p101'}`
+Invoking: `get_product_detail` with `{'product_id': 'p201'}`
+```
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "p201",
+    "name": "Google Pixel 8 Pro",
+    "category": "electronics",
+    "brand": "Google",
+    "price": 999.99,
+    "createTimestamp": [
+      2024,
+      1,
+      15,
+      0,
+      0
+    ],
+    "description": "Pixel phone with best-in-class AI features."
+  },
+  "error": null,
+  "toolName": "get_product_detail"
+}
 ```
 In the end, Agent will return a conversational summary with top-N products and explanations.
 
 ```text
 Your best-performing product in the electronics category for 
-next week is predicted to be the **Apple iPhone 15 Pro 256GB**. Here are the details:
-
-- **Product Name:** Apple iPhone 15 Pro 256GB
-- **Brand:** Apple
-- **Price:** $1099.00
-- **Description:** iPhone 15 Pro with A17 chip.
-- **Predicted Sales Quantity for June 5, 2025:** 566 units
+next week (June 2, 2025, to June 8, 2025) is predicted to be 
+the **Google Pixel 8 Pro**. Here are the details:
+- **Product Name:** Google Pixel 8 Pro
+- **Category:** Electronics
+- **Brand:** Google
+- **Price:** $999.99
+- **Description:** Pixel phone with best-in-class AI features.
+- **Total Predicted Sales Quantity:** 3,983 units over the week
 ```
 
 
