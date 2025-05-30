@@ -444,19 +444,105 @@ Functionalities include:
 User types:
 > "What's my best-performing product next week in electronics?"
 
-Agent thinking Steps:
+Agent thinking Steps:  
+1. Agent decide What is the Question ask it to do? -> predict_by_category.  
+And check what is the MCP required input parameter? -> ( seller_id, category, startTime,endTime, top_n)
+```
+2025-05-29 23:05:28,078 - memory_module - INFO - Agent thought: Initial query: What's my best-performing product next week in electronics?"
+```
 
-1. What is the Question ask me to do? -> predict_by_category
-2. What is the MCP required input parameter? -> ( seller_id, category, startTime,endTime, top_n)
-3. "Next Week" is not validate input -> "What is the time range?"
-4. Call "convert_time_range" tool to convert "next week" to a "startTime" + "endTime" range.
-5. Seller ID is not provided -> ask user "What is your seller" -> User reply "seller_1"
-   -> fill in seller_id
-6. But if we just tell LLM "seller_1", AI will ask :"What do you want to do with "seller_1" ? let me check history. 
-7. History found, "What's my best-performing product next week in electronics + seller_1 + start/end time". Fills in missing info (e.g. `seller_id`, `category`)
-8. Calls `/mcp/sales/predict`
-9. Returns conversational summary with top-N products and explanations
-10. If user next more details on product, call `/mcp/sales/manage_product` to get product details
+2. Agent ask user to give miss context: Seller ID
+```text
+2025-05-29 23:07:55,273 - memory_module - INFO - Agent thought: Response with enhanced context: To predict your best-performing product in the electronics category for next week, I'll need to know your seller ID. Could you please provide that information?
+```
+3. After user reply "seller_1", Agent still confused, what do you want to me to do by "seller_1". 
+```text
+2025-05-29 23:08:23,588 - agent_initializer - INFO - Processing user input: seller_1
+2025-05-29 23:08:23,589 - memory_module - INFO - Agent thought: Initial query: seller_1
+It looks like you mentioned "seller_1." How can I assist you with this seller? Are you looking for sales analytics, product details, order lists, or something else related to this seller?
+```
+4. Agent will enrich its memory and context by looking at chat history
+```text
+2025-05-29 23:08:25,518 - memory_module - INFO - Agent thought: Context missing detected. Enhancing input with conversation history.
+2025-05-29 23:08:25,518 - memory_module - INFO - Enhanced user input with full conversation history
+2025-05-29 23:08:25,518 - memory_module - INFO - Agent thought: Enhanced input created:
+===== CONVERSATION HISTORY =====
+User: What's my best-performing product next week in electronics?...
+```
+5. Agent still don't know what is the start and end time, so it will call `resolve_time_range` to
+   convert "next week" to start and end time.
+```text
+Invoking: `resolve_time_range` with `{'prompt': 'next week'}`
+{'start_time': '2025-06-05', 'end_time': '2025-06-05'}
+```
+6. After having all the context, Agent will call `/mcp/sales/predict` with the following parameters:
+   - `category`: "electronics"
+   - `seller_id`: "seller_1"
+   - `top_n`: 1
+   - `start_date`: "2025-06-05"
+   - `end_date`: "2025-06-05"
+
+```text
+Invoking: `predict_top_N_sale_by_category` with `{'category': 'electronics', 'seller_id': 'seller_1', 'top_n': 1, 'start_date': '2025/06/05', 'end_date': '2025/06/05'}`
+```
+response from MCP server.
+```json
+{
+  "status": "success",
+  "data": {
+    "end_date": "2025-06-05",
+    "category": "electronics",
+    "seller_id": "seller_1",
+    "predictions": [
+      {
+        "productId": "p101",
+        "predicationList": [
+          {
+            "date": [
+              2025,
+              6,
+              5
+            ],
+            "quantity": 566
+          }
+        ],
+        "startDate": [
+          2025,
+          6,
+          5
+        ],
+        "endDate": [
+          2025,
+          6,
+          5
+        ],
+        "totalQuantity": 566,
+        "totalDays": 1
+      }
+    ],
+    "start_date": "2025-06-05"
+  },
+  "error": null,
+  "toolName": "predict_by_category"
+
+```
+7. Since user ask for product details, Agent will call `/mcp/sales/manage_product` to get product
+   details.
+```text
+Invoking: `get_product_detail` with `{'product_id': 'p101'}`
+```
+In the end, Agent will return a conversational summary with top-N products and explanations.
+
+```text
+Your best-performing product in the electronics category for next week is predicted to be the **Apple iPhone 15 Pro 256GB**. Here are the details:
+
+- **Product Name:** Apple iPhone 15 Pro 256GB
+- **Brand:** Apple
+- **Price:** $1099.00
+- **Description:** iPhone 15 Pro with A17 chip.
+- **Predicted Sales Quantity for June 5, 2025:** 566 units
+```
+
 
 ### E.2 LLM API usage
 
