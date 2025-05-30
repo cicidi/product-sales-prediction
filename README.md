@@ -31,6 +31,28 @@
     - [H. Cost Optimization / Performance & Latency / Accuracy](#h-cost-optimization--performance--latency--accuracy)
     - [I. Summary](#j-summary)
 
+
+Hello, my name is Walter Chen. I’m a Senior Staff Software Engineer with over a decade of experience in backend architecture, AI system integration, and leading large-scale cross-functional initiatives. I hold a Master’s degree in Information Systems and Operations Management from the University of Florida.
+
+Over the past few years, I’ve led end-to-end system design and development efforts in various domains such as fintech, real estate tech, and electric vehicles. At PayPal, I spearheaded the Fastlane product from conception to global launch, and Currently, I am primarily responsible for improving engineering productivity in PayPal's merchant integration by adopting AI technologies.
+
+What truly excites me is the intersection of AI and system design. Since 2023, I’ve been deeply involved in AI development — I’ve built two personal AI-driven mini apps, one use llm index to build Rag for summarize and search connects from youtubes. I love building practical, scalable systems that bring intelligence into real-time applications. My passion lies in understanding how we can design intelligent agents that interact with users naturally and can reason through structured APIs to deliver business value.
+
+🔹 Professional Achievements (10 minutes)
+🏆 1. Fastlane End-to-End Development at PayPal
+I led the E2E development of the Fastlane checkout product at PayPal — from the first design document to global GA rollout. This was a cross-functional effort involving frontend, backend, payment gateways, and legal compliance.
+
+I drove architectural decisions, led sprint planning and delivery, and ensured cross-team alignment across multiple geos. After its launch, Fastlane scaled to serve millions of users, helping significantly improve conversion rates.
+
+One of my proudest moments was driving the Vault optimization initiative as part of Fastlane. Initially, our Vault API success rate was at 99.8%. After a deep investigation into performance bottlenecks and several iterations of design and implementation, I improved the Vault success rate to 99.98%. That 0.18% may seem small, but at PayPal's scale, it translates to thousands of successful user checkouts per day.
+
+🏆 2. AI Tool
+
+We are building an AI tool that automatically analyzes JIRA ticket descriptions and application logs to identify the root cause of issues. Once the problem is understood, the system either suggests or directly applies the appropriate fix, and then responds to the JIRA ticket with a detailed resolution summary.
+
+The goal is to significantly reduce mean time to resolution (MTTR), automate repetitive troubleshooting tasks, and allow engineers to focus on more complex and impactful work. By integrating with internal knowledge bases and historical tickets, the tool continuously learns and improves its accuracy over time.
+
+
 # Product Sales Prediction System Design
 
 ---
@@ -425,13 +447,12 @@ User types:
 Agent thinking Steps:
 
 1. What is the Question ask me to do? -> predict_by_category
-2. What is the input? -> { "seller_id": "seller_1", "category": "electronics", "time_range": "next
-   week", "top_n": 5 }
+2. What is the MCP required input parameter? -> ( seller_id, category, startTime,endTime, top_n)
 3. "Next Week" is not validate input -> "What is the time range?"
-4. Call "convert_time_range" tool to convert "next week" to a valid time range.
-5. Seller ID and category are not provided -> ask user "What is your seller" -> User reply "seller_1"
+4. Call "convert_time_range" tool to convert "next week" to a "startTime" + "endTime" range.
+5. Seller ID is not provided -> ask user "What is your seller" -> User reply "seller_1"
    -> fill in seller_id
-6. What do you want to do with "seller_1" ? let me check history. 
+6. But if we just tell LLM "seller_1", AI will ask :"What do you want to do with "seller_1" ? let me check history. 
 7. History found, "What's my best-performing product next week in electronics + seller_1 + start/end time". Fills in missing info (e.g. `seller_id`, `category`)
 8. Calls `/mcp/sales/predict`
 9. Returns conversational summary with top-N products and explanations
